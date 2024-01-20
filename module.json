@@ -1,0 +1,36 @@
+{
+  "id": "combat-tracker-extensions",
+  "title": "Combat Tracker Extensions",
+  "description": "",
+  "url": "",
+  "license": "https://opensource.org/licenses/AGPL-3.0",
+  "readme": "",
+  "bugs": "",
+  "changelog": "",
+  "version": "1.0",
+  "compatibility": {
+    "minimum": "10",
+    "maximum": "11",
+    "verified": "11"
+  },
+  "esmodules": [
+    "scripts/combat-tracker-extensions.js"
+  ],
+  "styles": [
+    "styles/style.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    }
+  ],
+  "manifest": "",
+  "download": "",
+  "authors": [
+    {
+      "name": "Ramses800"
+    }
+  ]
+}

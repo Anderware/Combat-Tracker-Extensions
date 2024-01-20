@@ -1,0 +1,15 @@
+.token-initiative input {
+    color: white;
+}
+
+
+.combat-sidebar li.combatant .token-name .combat-tracker-extensions-combatant-control {
+    flex: 0 0 20px;
+    height: 20px;
+    float: left;
+    color: var(--color-text-dark-5);
+}
+
+.combat-sidebar li.combatant .token-name .combat-tracker-extensions-combatant-control.active {
+    color: var(--color-text-light-1);
+}

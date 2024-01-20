@@ -1,0 +1,111 @@
+{
+  "COMBAT.ToggleNameMask": "Toggle Name Masking",
+  "COMBAT.UnknownCombatant": "Unknown",
+  "settings": {
+    "categories": {
+      "GENERAL_OPTIONS": {
+        "Name": "General Options",
+        "Hint": "General options"
+      },
+      "COMBATTRACKER_OPTIONS": {
+        "Name": "Combat Tracker Options",
+        "Hint": "Options for Combat Tracker"
+      }
+    },
+    "settings": {
+      "OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS": {
+        "Name": "Show disposition for GMs",
+        "Hint": "When checked, the Combat Tracker will indicate by color the disposition of the combatant."
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS": {
+        "Name": "Show disposition for players",
+        "Hint": "When checked, the Combat Tracker will indicate by color the disposition of the combatant."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING": {
+        "Name": "Enable name masking",
+        "Hint": "When checked, GMs can toggle masking the name of combatants for non-GMs in the Combat Tracker."
+      },
+      "OPTION_COMBAT_TRACKER_ADD_COMBATANTS_NAME_MASKED": {
+        "Name": "Add NPC combatants with name masked",
+        "Hint": "When checked, adding a NPC token to the Combat Tracker will have its name masked for non-GMs."
+      },
+      "OPTION_COMBAT_TRACKER_ADD_COMBATANTS_HIDDEN": {
+        "Name": "Add NPC combatants as hidden",
+        "Hint": "When checked, adding a NPC token to the Combat Tracker will be added as hidden."
+      },
+      "OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT": {
+        "Name": "Enable obscure combatant",
+        "Hint": "When checked, the Combat Tracker will display token/information on NPC tokens based on setttings and ownership. Applies for non-GMs only."
+      },
+      "OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_VISIBILITY": {
+        "Name": "Obscure combatant by visibility",
+        "Hint": "When checked, the Combat Tracker will display token/information on NPC tokens based on their visibility. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only."
+      },
+      "OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_DISPOSITION": {
+        "Name": "Obscure combatant by disposition",
+        "Hint": "When checked, the Combat Tracker will display token/information on NPC tokens based on their disposition. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only."
+      },
+      "OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE": {
+        "Name": "Reverse initiative",
+        "Hint": "Reverse the sorting order for initiative so that lowest goes first."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT": {
+        "Name": "Duplicate combatant",
+        "Hint": "Add a 'Duplicate Combatant' context menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD": {
+        "Name": "Initiative input field",
+        "Hint": "Replace the normal initiative value with an input field"
+      },
+      "OPTION_COMBAT_TRACKER_INITIATIVE_INPUT_MIN": {
+        "Name": "Minimum initiative input allowed",
+        "Hint": ""
+      },
+      "OPTION_COMBAT_TRACKER_INITIATIVE_INPUT_MAX": {
+        "Name": "Maximum initiative input allowed",
+        "Hint": ""
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_INITIATIVES_FRIENDLY": {
+        "Name": "Show FRIENDLY combatants initiative",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_INITIATIVES_NEUTRAL": {
+        "Name": "Show NEUTRAL combatants initiative",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_INITIATIVES_HOSTILE": {
+        "Name": "Show HOSTILE combatants initiative",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_INITIATIVES_SECRET": {
+        "Name": "Show SECRET combatants initiative",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_FRIENDLY": {
+        "Name": "Show FRIENDLY combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NEUTRAL": {
+        "Name": "Show NEUTRAL combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_HOSTILE": {
+        "Name": "Show HOSTILE combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_SECRET": {
+        "Name": "Show SECRET combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      }      ,
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NPCS": {
+        "Name": "Show NPCs combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NON_NPCS": {
+        "Name": "Show non-NPCs combatants",
+        "Hint": "Only used if [Enable obscure combatant] is checked"
+      }
+      
+    }
+  }
+}
