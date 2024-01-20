@@ -5,32 +5,33 @@ A FoundryVtt module for extending the Combat Tracker
 ## Features
 
 - Combatant name masking - hides token name from non-GMs
-- Obscures combatant information for non-Gms based on
+- Obscures combatant information for non-GMs based on
+  - Module current settings
+  - NPC/Player token
   - Token disposition
   - Token current visibility for current player
   - Token ownership
 - Reverse initiative order
 - Multiple combatants for the same token
 - Quick input field to modify current initiative value
+- Show combatant disposition by color indication in Combat Tracker
+- All features optional and configurable
 
-## Compability
+## Module Compability
 
-Foundry version 10,11
+Foundry version 10, 11
 
+# Settings
 ## Combat Tracker Options
 Options for Combat Tracker
-### Enable name masking
-When checked, GMs can toggle masking the name of combatants for non-Gms in the Combat Tracker.
-### Add combatants with name masked
-When checked, adding a NPC token to the Combat Tracker will have its name masked for non-GMs.
-### Add combatants as hidden
+### Enable obscure combatant
+When checked, the Combat Tracker will display token/information on NPC tokens based on setttings and ownership. Applies for non-GMs only.
+### Add NPC combatants as hidden
 When checked, adding a NPC token to the Combat Tracker will be added as hidden.
-### Obscure combatant
-When checked, the Combat Tracker will display token/information on NPC tokens based their disposition, visibility and ownership. Applies for non-GMs only.
-### Show disposition for GMs
-When checked, the Combat Tracker will indicate by color the disposition of the combatant.
-### Show disposition for players
-When checked, the Combat Tracker will indicate by color the disposition of the combatant.
+### Enable name masking
+When checked, GMs can toggle masking the name of combatants for non-GMs in the Combat Tracker.
+### Add NPC combatants with name masked
+When checked, adding a NPC token to the Combat Tracker will have its name masked for non-GMs.
 ### Reverse initiative
 Reverse the sorting order for initiative so that lowest goes first.
 ### Duplicate combatant
@@ -40,6 +41,35 @@ Replace the normal initiative value with an input field
 ### Minimum initiative input allowed
 
 ### Maximum initiative input allowed
+
+### Show disposition for GMs
+When checked, the Combat Tracker will indicate by color the disposition of the combatant.
+### Show disposition for players
+When checked, the Combat Tracker will indicate by color the disposition of the combatant.
+### Obscure combatant by visibility
+When checked, the Combat Tracker will display token/information on NPC tokens based on their visibility. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+### Obscure combatant by disposition
+When checked, the Combat Tracker will display token/information on NPC tokens based on their disposition. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+### Show FRIENDLY combatants initiative
+Only used if [Enable obscure combatant] is checked
+### Show NEUTRAL combatants initiative
+Only used if [Enable obscure combatant] is checked
+### Show HOSTILE combatants initiative
+Only used if [Enable obscure combatant] is checked
+### Show SECRET combatants initiative
+Only used if [Enable obscure combatant] is checked
+### Show FRIENDLY combatants
+Only used if [Enable obscure combatant] is checked
+### Show NEUTRAL combatants
+Only used if [Enable obscure combatant] is checked
+### Show HOSTILE combatants
+Only used if [Enable obscure combatant] is checked
+### Show SECRET combatants
+Only used if [Enable obscure combatant] is checked
+### Show NPCs combatants
+Only used if [Enable obscure combatant] is checked
+### Show non-NPCs combatants
+Only used if [Enable obscure combatant] is checked
 
 ## Source code used
 
