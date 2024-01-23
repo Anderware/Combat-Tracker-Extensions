@@ -1,3 +1,5 @@
+![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/master.zip)
+
 # Combat Tracker Extensions
 
 A FoundryVtt module for extending the Combat Tracker
