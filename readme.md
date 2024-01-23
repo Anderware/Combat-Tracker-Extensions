@@ -1,4 +1,4 @@
-![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/master.zip)
+![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/combat-tracker-extensions_20240123112605.zip)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/total)
 
 
