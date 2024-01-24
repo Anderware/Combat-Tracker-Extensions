@@ -1,0 +1,65 @@
+.token-initiative input {
+  color: white;
+}
+
+
+.combat-sidebar li.combatant .token-name .combat-tracker-extensions-combatant-control {
+  flex: 0 0 20px;
+  height: 20px;
+  float: left;
+  color: var(--color-text-dark-5);
+}
+
+.combat-sidebar li.combatant .token-name .combat-tracker-extensions-combatant-control.active {
+  color: var(--color-text-light-1);
+}
+
+.combat-sidebar li.combat-tracker-extensions-phase .combat-tracker-extensions-phase h3 {
+  margin: 13px 0px 13px 7px;
+  border-style: none;
+  text-align: center;
+  font-size: var(--font-size-16);
+}
+.combat-sidebar li.combat-tracker-extensions-phase{
+  border-top: 2px groove var(--color-border-dark-4);
+  border-bottom: 2px groove var(--color-border-dark-4);
+}
+
+.combat-sidebar li.combatant.hover,
+.combat-sidebar li.combatant:hover {
+  backdrop-filter: invert(0.33);
+	z-index: 1;
+}
+
+#context-menu > ol > li.context-group > ol > li:nth-child(1){
+	border-top:1px solid var(--color-border-dark-4);
+}
+
+.combat-tracker-extensions-icon-btn{  
+  line-height: 26px;
+  margin-left: 3px;
+  font-size: 16px;
+}
+
+.combat-tracker-extensions-icon{  
+  line-height: 26px;
+  margin-left: 3px;
+  font-size: 16px;
+}
+
+
+.combat-tracker-extensions-icon-btn:hover{
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--color-shadow-primary);;
+} 
+
+.combat-tracker-extensions-phase-editor-data-thead>tr>th{
+  text-align:left;
+}
+
+.combat-tracker-extensions-phase-editor-cell-manipulator{
+  width:60px;
+}
+.combat-tracker-extensions-phase-editor-data-container{
+  height: calc(100% - 80px);
+}

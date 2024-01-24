@@ -1,0 +1,55 @@
+<form id="combat-tracker-extensions-phase-editor-form" class="combat-tracker-extensions-phase-editor-form">
+  <h2 class="module-header" style="padding-top:5px;border-top: 1px solid #b5b3a4;">{{localize 'PhaseEditor.Title'}}</h2>
+
+
+  <!-- Main data container -->
+  <div class="combat-tracker-extensions-phase-editor-data-container">
+    <table id="combat-tracker-extensions-phase-editor-data-table" class="combat-tracker-extensions-phase-editor-data-table"  name="combat-tracker-extensions-phase-editor-data-table">
+      <thead id="combat-tracker-extensions-phase-editor-data-thead" class="combat-tracker-extensions-phase-editor-data-thead">
+        <tr id="combat-tracker-extensions-phase-editor-data-thead-row">
+          <th></th>
+          <th>{{localize "PhaseEditor.TableHeader.PhaseName.Caption" }}</th>
+          <th>{{localize "PhaseEditor.TableHeader.PhaseIcon.Caption" }} <i class="fas fa-circle-question" data-tooltip="{{localize "PhaseEditor.TableHeader.PhaseIcon.Hint"}}"></i></th>
+          <th class="combat-tracker-extensions-phase-editor-cell-manipulator"></th>
+        </tr>
+      </thead>
+      <tbody id="combat-tracker-extensions-phase-editor-data-tbody" class="combat-tracker-extensions-phase-editor-data-tbody">
+        {{#each phases}}
+        <tr>
+          <td><i class="fas {{this.icon}} combat-tracker-extensions-icon"></i></td>
+          <td><input class="combat-tracker-extensions-phase-editor-name-input" type="text" value="{{this.name}}"/></td>
+          <td><input class="combat-tracker-extensions-phase-editor-icon-input" type="text" value="{{this.icon}}"</td>
+          <td class="combat-tracker-extensions-phase-editor-cell-manipulator">
+            <i class="fas fa-arrow-alt-circle-up combat-tracker-extensions-icon-btn combat-tracker-extensions-phase-editor-move-phase-up" data-tooltip="{{localize "PhaseEditor.Button.MovePhaseUp.Hint"}}" ></i><i class="fas fa-arrow-alt-circle-down combat-tracker-extensions-icon-btn combat-tracker-extensions-phase-editor-move-phase-down" data-tooltip="{{localize "PhaseEditor.Button.MovePhaseDown.Hint"}}" ></i><i class="fas fa-trash combat-tracker-extensions-icon-btn combat-tracker-extensions-phase-editor-delete-phase" data-tooltip="{{localize "PhaseEditor.Button.DeletePhase.Hint"}}" ></i>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+      <tfoot class="combat-tracker-extensions-phase-editor-data-tfoot">
+        <tr id="combat-tracker-extensions-phase-editor-footer" class="combat-tracker-extensions-phase-editor-footer">
+          <td><i class="fas fa-circle-plus combat-tracker-extensions-icon-btn" id="combat-tracker-extensions-phase-editor-add-phase" data-tooltip="{{localize "PhaseEditor.Button.AddPhase.Hint"}}" ></i></td>
+          <td></td>
+          <td></td>
+          <td class="combat-tracker-extensions-phase-editor-cell-manipulator"></td>
+        </tr>
+      </tfoot>
+        </table>
+        </div>
+
+
+        <!-- Settings Footer -->
+  <footer class="sheet-footer flexrow">
+    <button type="button" name="combat-tracker-extensions-phase-editor-update">
+      <i class="fas fa-save"></i> {{localize "PhaseEditor.Button.Update.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-phase-editor-update-and-close">
+      <i class="fas fa-save"></i> {{localize "PhaseEditor.Button.UpdateAndClose.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-phase-editor-close-editor">
+      <i class="fas fa-times"></i> {{localize "PhaseEditor.Button.Close.Caption"}}
+    </button>
+  </footer>
+
+</form>

@@ -3,7 +3,7 @@ const moduleTitle = 'Combat Tracker Extensions';
 import { libWrapper } from './shim.js';
 import { SETTINGATTRIBUTE } from "./setting-constants.js"
 import { settingsMenus, settingsRegistration, getModuleSetting } from "./settings-registration.js";
-import { wrappedGetEntryContextOptions, wrappedOnHoverIn, wrappedOnHoverOut, wrappedOnToggleDefeatedStatus, _getCombatantsSharingToken } from "./duplicate-combatant.js";
+import { wrappedSortCombatants, wrappedGetEntryContextOptions, wrappedOnHoverIn, wrappedOnHoverOut, wrappedOnToggleDefeatedStatus, _getCombatantsSharingToken } from "./fvttt_core_overrides.js";
 
 Hooks.on('init', setup);
 
@@ -11,22 +11,13 @@ async function setup() {
   console.log(`${moduleTitle} | Initializing ${moduleTitle} module`);
   await settingsMenus(moduleId);
   await settingsRegistration(moduleId);
-
-  if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE.ID)) {
-    console.log(`${moduleTitle} | Reversing initiative sort order, lowest goes first`);
+  if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE.ID) || getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID)) {
+    // check for valid defined phases
+    console.log(`${moduleTitle} | Overriding default combatant sorting`);
     libWrapper.register(moduleId, 'Combat.prototype._sortCombatants', wrappedSortCombatants);
   }
-
-//  if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD.ID)) {
-//    // Remove initiative formula if replacing initiative roll with input field
-//    CONFIG.Combat.initiative = {
-//      formula: null,
-//      decimals: 0
-//    };
-//  }
-
-  if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT.ID)) {
-    console.log(`${moduleTitle} | Added combatant context menu to have multiple combatants per token`);
+  if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT.ID) || getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE.ID)) {
+    console.log(`${moduleTitle} | Added combatant context menus`);
     libWrapper.register(moduleId, 'CombatTracker.prototype._onToggleDefeatedStatus', wrappedOnToggleDefeatedStatus);
     libWrapper.register(moduleId, 'CombatTracker.prototype._getEntryContextOptions', wrappedGetEntryContextOptions);
     libWrapper.register(moduleId, 'Token.prototype._onHoverIn', wrappedOnHoverIn);
@@ -34,19 +25,7 @@ async function setup() {
   }
 }
 
-// Sort from low to high
-function wrappedSortCombatants(wrapped, a, b) {
-  const ia = Number.isNumeric(a.initiative) ? a.initiative : Infinity;
-  const ib = Number.isNumeric(b.initiative) ? b.initiative : Infinity;
-  const ci = ia - ib;
-  if (ci !== 0)
-    return ci;
-  let [an, bn] = [a.token.name || "", b.token.name || ""];
-  let cn = an.localeCompare(bn);
-  if (cn !== 0)
-    return cn;
-  return a.tokenId - b.tokenId;
-}
+
 
 
 Hooks.on("updateToken", async (token, data, diff) => {
@@ -56,7 +35,6 @@ Hooks.on("updateToken", async (token, data, diff) => {
     // check if this token is in combat
     const combatTracker = game.combats.apps[0];
     const c = combatTracker.viewed.combatants.find(y => y.tokenId == token.id);
-
     if (c != null) {
       // check if moved
       let updateCombatTracker = false;
@@ -77,7 +55,6 @@ Hooks.on("updateToken", async (token, data, diff) => {
         setTimeout(() => {
           combatTracker.render(true);
         }, 1000);
-
       }
     }
   }
@@ -99,21 +76,30 @@ Hooks.on("preCreateCombatant", async(combatant) => {
   const OPTION_COMBAT_TRACKER_ADD_COMBATANTS_HIDDEN = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ADD_COMBATANTS_HIDDEN.ID);
   const OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING.ID);
   const OPTION_COMBAT_TRACKER_ADD_COMBATANTS_NAME_MASKED = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ADD_COMBATANTS_NAME_MASKED.ID);
-
+  const OPTION_COMBAT_TRACKER_ENABLE_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID);
   if (OPTION_COMBAT_TRACKER_ADD_COMBATANTS_HIDDEN) {
     if (combatant.isNPC) {
       await combatant.updateSource({hidden: true});
     }
   }
+  let flags;
   if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING && OPTION_COMBAT_TRACKER_ADD_COMBATANTS_NAME_MASKED) {
     if (combatant.isNPC) {
-      let flagUnknown = {sandbox: {maskname: true}};
-      await combatant.updateSource({flags: flagUnknown});
+      flags = {combattrackerextensions: {maskname: true}};
     }
   }
+  if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
+    let unsetPhaseValue = 9999;
+    if (flags == null) {
+      flags = {combattrackerextensions: {phase: unsetPhaseValue}};
+    } else {
+      flags.combattrackerextensions.phase = unsetPhaseValue;
+    }
+  }
+  if (flags != null) {
+    await combatant.updateSource({flags: flags});
+  }
 });
-
-
 
 Hooks.on('updateSetting', async (setting, value, diff) => {
   //console.log('updateSetting',setting);
@@ -123,14 +109,12 @@ Hooks.on('updateSetting', async (setting, value, diff) => {
     if (gamesetting.hasOwnProperty('requiresreload')) {
       if (gamesetting.requiresreload) {
         // reload for settings to take effect
-
         setTimeout(() => {
           location.reload();
         }, 2000);
       }
     } else {
       const combatTracker = game.combats.apps[0];
-
       setTimeout(() => {
         combatTracker.render(true);
       }, 2000);
@@ -146,16 +130,53 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
   const OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS.ID);
   const OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS.ID);
   const OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD.ID);
-  if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS || OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
+  const OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS.ID);
+  const OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS.ID);
+  const OPTION_COMBAT_TRACKER_ENABLE_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID);
+
+  if (OPTION_COMBAT_TRACKER_ENABLE_PHASES || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS || OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
+    let definedPhases = null;
+    if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
+      const OPTION_COMBAT_TRACKER_DEFINED_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_DEFINED_PHASES.ID);
+      if (OPTION_COMBAT_TRACKER_DEFINED_PHASES.length > 0)
+        definedPhases = JSON.parse(OPTION_COMBAT_TRACKER_DEFINED_PHASES);
+      if(definedPhases==null)
+        definedPhases={phases:[]};
+      // push an extra phase 'Unset'
+      const phaseUnset = {name: game.i18n.localize("COMBAT.PhaseUnset"), icon: 'fa-question'};      
+      definedPhases.phases.push(phaseUnset);
+    }
     const combatants = html.find('.combatant');
+    const combatantOl = html.find('#combat-tracker')[0];
+    
+    let currentPhase = 0;    
     for (const combatantElement of combatants) {
       const combatant = await game.combat.combatants.get(combatantElement.dataset.combatantId);
+      const combatantPhase = combatant.flags?.combattrackerextensions?.phase ?? Infinity;
+      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
+        for (let i = currentPhase; i < definedPhases.phases.length && i <= combatantPhase; i++) {
+          currentPhase = combatantPhase + 1;
+          let phaseLi = document.createElement('LI');
+          phaseLi.setAttribute('class', 'combat-tracker-extensions-phase flexrow');
+          let phaseDiv = document.createElement('DIV');
+          phaseDiv.setAttribute('class', 'combat-tracker-extensions-phase');
+          phaseDiv.setAttribute('data-phase', definedPhases.phases[i].name);
+          let phaseTitle = document.createElement('H3');
+          phaseTitle.innerHTML = `<i class="fas ${definedPhases.phases[i].icon}"></i> ${definedPhases.phases[i].name}`;
+          phaseDiv.appendChild(phaseTitle);
+          phaseLi.appendChild(phaseDiv);
+          let inserted = combatantOl.insertBefore(phaseLi, combatantElement);
+        }
+      }
       //console.log(combatant);
       const token = await combatant.token;
       if ((OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS && game.user.isGM) || (OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS && !game.user.isGM)) {
-        let dispositionColor = "#" + CONFIG.Canvas.dispositionColors.NEUTRAL.toString(16);
+        // --------------------------------------
+        // For both gms and non-gms if applicable
+        // --------------------------------------
+        let dispositionColor;
         // check disposition
-        switch (token.disposition) {
+        switch (token?.disposition ?? '') {
           case CONST.TOKEN_DISPOSITIONS.FRIENDLY:
             dispositionColor = "#" + CONFIG.Canvas.dispositionColors.FRIENDLY.toString(16);
             break;
@@ -169,12 +190,29 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             dispositionColor = "#" + CONFIG.Canvas.dispositionColors.SECRET.toString(16);
             break;
           default:
+            dispositionColor = "#" + CONFIG.Canvas.dispositionColors.SECRET.toString(16);
             break;
         }
         combatantElement.style.background = dispositionColor + Math.round(255 * (30 / 100)).toString(16);
       }
+      if ((OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS && game.user.isGM) || (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS && !game.user.isGM)) {
+        // get the image from the token actor portrait
+        // console.log(combatant);
+        const actorImg = token.actor.img;
+        // get the image element   token-image
+        let initImg = combatantElement.getElementsByClassName('token-image')[0];
+        if (initImg.src != actorImg) {
+          // replace the image src attribute
+          const newImg = document.createElement('IMG');
+          newImg.src = actorImg;
+          initImg.replaceWith(newImg);
 
+        }
+      }
       if (game.user.isGM) {
+        // ----------------------------
+        // FOR GMSs
+        // ----------------------------
         if (OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
           const initDiv = combatantElement.getElementsByClassName('token-initiative')[0];
           const min = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_INITIATIVE_INPUT_MIN.ID);
@@ -210,7 +248,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           const lastChild = combatantControlsDiv.lastElementChild;
           // create new and insert before
           let aMask = document.createElement("A");
-          let isMasked = combatant.flags?.sandbox?.maskname ?? false;
+          let isMasked = combatant.flags?.combattrackerextensions?.maskname ?? false;
           if (isMasked) {
             aMask.setAttribute('class', 'combat-tracker-extensions-combatant-control active');
           } else {
@@ -220,7 +258,6 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           aMask.setAttribute('data-tooltip', game.i18n.localize("COMBAT.ToggleNameMask"));
           let iMask = document.createElement("I");
           iMask.setAttribute('class', 'fas fa-mask');
-
           aMask.appendChild(iMask);
           // add toggle event
           aMask.addEventListener("click", async (event) => {
@@ -230,40 +267,37 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             const li = btn.closest(".combatant");
             const combat = combatTracker.viewed;
             const c = combat.combatants.get(li.dataset.combatantId);
-            let isMasked = combatant.flags?.sandbox?.maskname ?? false;
-            let flagUnknown = {sandbox: {maskname: true}};
+            let isMasked = combatant.flags?.combattrackerextensions?.maskname ?? false;
+            let flagUnknown = {combattrackerextensions: {maskname: true}};
             if (isMasked) {
-              flagUnknown.sandbox.maskname = false;
+              flagUnknown.combattrackerextensions.maskname = false;
             }
             const otherCombatantsSharingToken = _getCombatantsSharingToken(c);
             for (const cb of otherCombatantsSharingToken) {
               await cb.update({flags: flagUnknown});
             }
           });
-
           let inserted = combatantControlsDiv.insertBefore(aMask, lastChild);
         }
       } else {
+        // --------------------------------
         // for non-GMs
+        // --------------------------------
         const OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_VISIBILITY = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_VISIBILITY.ID);
         const OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_DISPOSITION = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_DISPOSITION.ID);
-
         const initDiv = combatantElement.getElementsByClassName('token-initiative')[0];
         const nameDiv = combatantElement.getElementsByClassName('token-name')[0];
-
         if (initDiv) {
           const combatantLi = initDiv.parentNode;
           let hideInitiativeValue = false;
           let hideCombatantEntry = false;
           let hideCombatantName = false;
-
           if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING) {
             // check flags
-            if (combatant.flags?.sandbox?.maskname ?? false) {
+            if (combatant.flags?.combattrackerextensions?.maskname ?? false) {
               hideCombatantName = true;
             }
           }
-
           if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT) {
             const OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NPCS.ID);
             const OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NON_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NON_NPCS.ID);
@@ -298,7 +332,6 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
                   break;
               }
             }
-            
             if (combatant.isNPC && !OPTION_COMBAT_TRACKER_SHOW_COMBATANTS_NPCS) {
               hideInitiativeValue = true;
               hideCombatantEntry = true;
@@ -309,8 +342,6 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
               hideCombatantEntry = true;
               hideCombatantName = true;
             }
-
-
             if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_VISIBILITY) {
               // check for visibility
               if (canvas.ready && (combatant.sceneId == canvas.scene.id)) {
@@ -322,9 +353,6 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
               }
             }
           }
-
-
-
           // always check for ownership
           if (token.isOwner) {
             hideInitiativeValue = false;
@@ -345,6 +373,23 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         }
       }
     }
-  }
 
+    // Add final phases no already added
+    if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
+      for (let i = currentPhase; i < definedPhases.phases.length; i++) {
+        let phaseLi = document.createElement('LI');
+        phaseLi.setAttribute('class', 'combat-tracker-extensions-phase flexrow');
+        let phaseDiv = document.createElement('DIV');
+        phaseDiv.setAttribute('class', 'combat-tracker-extensions-phase');
+        let phaseIcon = document.createElement('I');
+        phaseIcon.setAttribute('class', 'fas ' + definedPhases.phases[i].icon);
+        let phaseTitle = document.createElement('H3');
+        phaseTitle.appendChild(phaseIcon);
+        phaseTitle.innerHTML = `<i class="fas ${definedPhases.phases[i].icon}"></i> ${definedPhases.phases[i].name}`;
+        phaseDiv.appendChild(phaseTitle);
+        phaseLi.appendChild(phaseDiv);
+        let inserted = combatantOl.appendChild(phaseLi);
+      }
+    }
+  }
 });
