@@ -1,5 +1,5 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ramses800) ![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/latest/combat-tracker-extensions.zip?style=for-the-badge)
-
+![](https://dcbadge.vercel.app/api/shield/783401137281564692)
 # Combat Tracker Extensions
 
 A system-agnostic FoundryVTT module for modifying and extending the standard Combat Tracker
