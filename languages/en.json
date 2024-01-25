@@ -1,5 +1,6 @@
 {
   "COMBAT.ToggleNameMask": "Toggle Name Masking",
+  "COMBAT.ToggleTokenVisibility":"Toggle Token Visibility",
   "COMBAT.DuplicateCombatant": "Duplicate Combatant",
   "COMBAT.RemoveAllDuplicates": "Remove All Duplicates",
   "COMBAT.ChangeDispositionToFriendly": "Change disposition to FRIENDLY",
@@ -33,6 +34,8 @@
       }
     },
     "settings": {
+      
+      
       "OPTION_COMBAT_TRACKER_PHASE_EDITOR_FORM": {
         "Name": "Phase Editor",
         "Hint": "Opens the Phase Editor"
@@ -68,6 +71,10 @@
       "OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING": {
         "Name": "Enable name masking",
         "Hint": "When checked, GMs can toggle masking the name of combatants for non-GMs in the Combat Tracker."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE": {
+        "Name": "Enable visibility toggle",
+        "Hint": "When checked, GMs can toggle visibility of the combatant token in the Combat Tracker."
       },
       "OPTION_COMBAT_TRACKER_ADD_COMBATANTS_NAME_MASKED": {
         "Name": "Add NPC combatants with name masked",
