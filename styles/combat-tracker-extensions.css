@@ -1,13 +1,19 @@
-:root {
-  --combat-tracker-extensions-disposition-friendly:forestgreen;  
-  --combat-tracker-extensions-disposition-neutral:gold;
-  --combat-tracker-extensions-disposition-hostile:darkred;
-  --combat-tracker-extensions-disposition-secret:indigo;
+:root {  
+  --combat-tracker-extensions-disposition-opacity-default:0.3;
+  --combat-tracker-extensions-disposition-opacity-hover:0.6;
   
-  --combat-tracker-extensions-disposition-friendly-transparent:rgba(67, 223, 223, 0.3);
-  --combat-tracker-extensions-disposition-neutral-transparent:rgba(241, 216, 54, 0.3);
-  --combat-tracker-extensions-disposition-hostile-transparent:rgba(231, 33, 36, 0.3);
-  --combat-tracker-extensions-disposition-secret-transparent:rgba(166, 18, 212, 0.3);
+  --combat-tracker-extensions-disposition-friendly-default:rgba(67, 223, 223, var(--combat-tracker-extensions-disposition-opacity-default));
+  --combat-tracker-extensions-disposition-neutral-default :rgba(241, 216, 54, var(--combat-tracker-extensions-disposition-opacity-default));
+  --combat-tracker-extensions-disposition-hostile-default :rgba(231, 33, 36, var(--combat-tracker-extensions-disposition-opacity-default));
+  --combat-tracker-extensions-disposition-secret-default  :rgba(166, 18, 212, var(--combat-tracker-extensions-disposition-opacity-default));
+  --combat-tracker-extensions-disposition-party-default   :rgba(51, 188, 78, var(--combat-tracker-extensions-disposition-opacity-default));
+  
+  
+  --combat-tracker-extensions-disposition-friendly-hover:rgba(67, 223, 223, var(--combat-tracker-extensions-disposition-opacity-hover));
+  --combat-tracker-extensions-disposition-neutral-hover :rgba(241, 216, 54, var(--combat-tracker-extensions-disposition-opacity-hover));
+  --combat-tracker-extensions-disposition-hostile-hover :rgba(231, 33, 36, var(--combat-tracker-extensions-disposition-opacity-hover));
+  --combat-tracker-extensions-disposition-secret-hover  :rgba(166, 18, 212, var(--combat-tracker-extensions-disposition-opacity-hover));
+  --combat-tracker-extensions-disposition-party-hover   :rgba(51, 188, 78, var(--combat-tracker-extensions-disposition-opacity-hover));
 }
 .token-initiative input {
   color: white;
@@ -38,35 +44,50 @@
 
 
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-friendly{
-  background-color: var(--combat-tracker-extensions-disposition-friendly-transparent);
+  background-color: var(--combat-tracker-extensions-disposition-friendly-default);
+  
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-neutral{
-  background-color: var(--combat-tracker-extensions-disposition-neutral-transparent);
+  background-color: var(--combat-tracker-extensions-disposition-neutral-default);
+  
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-hostile{
-  background-color: var(--combat-tracker-extensions-disposition-hostile-transparent);
+  background-color: var(--combat-tracker-extensions-disposition-hostile-default);
+  
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-secret{
-  background-color: var(--combat-tracker-extensions-disposition-secret-transparent);
+  background-color: var(--combat-tracker-extensions-disposition-secret-default);
+  
 }
-
+.combat-sidebar li.combatant.combat-tracker-extensions-disposition-party{
+  background-color: var(--combat-tracker-extensions-disposition-party-default);
+  
+}
 
     
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-friendly.hover,
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-friendly:hover { 
-  background-color: var(--combat-tracker-extensions-disposition-friendly);
+  background-color: var(--combat-tracker-extensions-disposition-friendly-hover);  
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-neutral.hover,
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-neutral:hover { 
-  background-color: var(--combat-tracker-extensions-disposition-neutral);
+  background-color: var(--combat-tracker-extensions-disposition-neutral-hover);
+ 
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-hostile.hover,
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-hostile:hover { 
-  background-color: var(--combat-tracker-extensions-disposition-hostile);
+  background-color: var(--combat-tracker-extensions-disposition-hostile-hover);
+  
 }
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-secret.hover,
 .combat-sidebar li.combatant.combat-tracker-extensions-disposition-secret:hover { 
-  background-color: var(--combat-tracker-extensions-disposition-secret);
+  background-color: var(--combat-tracker-extensions-disposition-secret-hover);
+  
+}
+.combat-sidebar li.combatant.combat-tracker-extensions-disposition-party.hover,
+.combat-sidebar li.combatant.combat-tracker-extensions-disposition-party:hover { 
+  background-color: var(--combat-tracker-extensions-disposition-party-hover);
+  
 }
 
 

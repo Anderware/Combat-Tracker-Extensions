@@ -177,30 +177,34 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         // --------------------------------------
         // For both gms and non-gms if applicable
         // --------------------------------------
-        
+
         combatantElement.classList.remove('combat-tracker-extensions-disposition-friendly');
         combatantElement.classList.remove('combat-tracker-extensions-disposition-neutral');
         combatantElement.classList.remove('combat-tracker-extensions-disposition-hostile');
         combatantElement.classList.remove('combat-tracker-extensions-disposition-secret');
-        // check disposition
-        switch (token?.disposition ?? '') {
-          case CONST.TOKEN_DISPOSITIONS.FRIENDLY:            
-            combatantElement.classList.add('combat-tracker-extensions-disposition-friendly');
-            break;
-          case CONST.TOKEN_DISPOSITIONS.NEUTRAL:            
-            combatantElement.classList.add('combat-tracker-extensions-disposition-neutral');
-            break;
-          case CONST.TOKEN_DISPOSITIONS.HOSTILE:            
-            combatantElement.classList.add('combat-tracker-extensions-disposition-hostile');
-            break;
-          case CONST.TOKEN_DISPOSITIONS.SECRET:            
-            combatantElement.classList.add('combat-tracker-extensions-disposition-secret');
-            break;
-          default:            
-            combatantElement.classList.add('combat-tracker-extensions-disposition-secret');
-            break;
+        combatantElement.classList.remove('combat-tracker-extensions-disposition-party');
+        if (!combatant.isNPC) {
+          combatantElement.classList.add('combat-tracker-extensions-disposition-party');
+        } else {
+          // check disposition
+          switch (token?.disposition ?? '') {
+            case CONST.TOKEN_DISPOSITIONS.FRIENDLY:
+              combatantElement.classList.add('combat-tracker-extensions-disposition-friendly');
+              break;
+            case CONST.TOKEN_DISPOSITIONS.NEUTRAL:
+              combatantElement.classList.add('combat-tracker-extensions-disposition-neutral');
+              break;
+            case CONST.TOKEN_DISPOSITIONS.HOSTILE:
+              combatantElement.classList.add('combat-tracker-extensions-disposition-hostile');
+              break;
+            case CONST.TOKEN_DISPOSITIONS.SECRET:
+              combatantElement.classList.add('combat-tracker-extensions-disposition-secret');
+              break;
+            default:
+              combatantElement.classList.add('combat-tracker-extensions-disposition-secret');
+              break;
+          }
         }
-        
       }
       if ((OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS && game.user.isGM) || (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS && !game.user.isGM)) {
         // get the image from the token actor portrait
@@ -316,7 +320,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             const c = combat.combatants.get(li.dataset.combatantId);
             const token = await c.token;
             let isTokenVisible = token.hidden;
-            await token.update({hidden:!isTokenVisible});
+            await token.update({hidden: !isTokenVisible});
           });
           let inserted = combatantControlsDiv.insertBefore(aTokenVisibility, lastChild);
         }
