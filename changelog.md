@@ -1,5 +1,5 @@
 # Combat Tracker Extensions Change Log
-## Version 1.1(2024-01-xx)
+## Version 1.1(2024-02-01)
 - Added option "Enable pan to token for non-GMs", "When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token."
 - Added option "Show combatant effect tooltips","When checked, combatants active effects in Combat Tracker will have a describing tooltip"
 - Added option "Hide combatant effects for non-GMs","When checked, combatants active effects in Combat Tracker will only be showed for owned tokens."
