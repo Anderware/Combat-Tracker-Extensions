@@ -1,4 +1,8 @@
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ramses800) ![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/latest/combat-tracker-extensions.zip?style=for-the-badge)
+![Supported Foundry Versions](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https://raw.githubusercontent.com/Anderware/Combat-Tracker-Extensions/main/module.json&style=for-the-badge)![Supported Game Systems](https://img.shields.io/endpoint?url=https%3A%2F%2Ffoundryshields.com%2Fsystem%3FnameType%3Dfull%26showVersion%3D1%26style%3Dfor-the-badge%26url%3Dhttps%3A%2F%2Fraw.githubusercontent.com%2FAnderware%2FCombat-Tracker-Extensions%2Fmain%2Fmodule.json)
+
+![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/latest/combat-tracker-extensions.zip?style=for-the-badge)![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/combat-tracker-extensions.zip?style=for-the-badge)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ramses800) 
 
 # Combat Tracker Extensions
 
@@ -6,6 +10,7 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 
 ## Feature Summary
 
+- All features optional and configurable
 - Combatant name masking - hides token name in Combat Tracker from non-GMs
 - Obscures/hide combatant information/entry for non-GMs in Combat Tracker based on
   - Module current settings
@@ -15,24 +20,54 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
   - Token ownership
 - Automatically set added combatants to hidden/name masked
 - Change token disposition/visibility from Combat Tracker
+- Hide Active Effects for tokens on the canvas and/or the Combat Tracker
 - Reverse initiative order
 - Custom defined combat phases
+  - Allow players to change phase for owned tokens
+
 - Multiple combatants for the same token
 - Quick input field to modify current initiative value
 - Show combatant disposition by color indication
 - Show token actor portrait instead of token portrait
-- All features optional and configurable
+- Pan to token in Combat Tracker for players
 
-### Demo screen
+### Demo screen 1
 
-In the screenshot below, to the left is the GMs screen, to the right is the player Albans screen.
-Alban can not see Orc Shaman(invisible) or Orc Archer 2(blocked line of sight)
+In the screenshot below, a scenario with all module options enabled, to the left is the GMs screen, to the right is the Alban´s player screen.
+Alban´s player can not see Orc Shaman(invisible) or Orc Archer 2(blocked line of sight), he can not see any other tokens/combatants active effects or the name of masked combatants. The token Eva has disposition of SECRET and therefore her initiative is hidden from Alban.
+Alban has also been granted a second action(duplicated combatant).
 
 ![Demo](./resources/demo_screen_1.jpg)
 
-### Demo combatant context menu
+### Demo screen 2
 
-![Demo Context Menu](./resources/demo_screen_2.jpg)
+In this scenario, Alban´s player can only see other players that has a FRIENDLY disposition
+
+![](./resources/demo_screen_2.jpg)
+
+### Demo screen 3
+
+Same scenario as demo 2 but with phases disabled
+
+![](./resources/demo_screen_3.jpg)
+
+### Dropdown menus
+
+#### Encounter controls
+
+![](./resources/demo_screen_dropdown_encounter_control.jpg)
+
+#### Combatant
+
+![](./resources/demo_screen_dropdown_combatant_control.jpg)
+
+#### Phase Assignment
+
+![](./resources/demo_screen_dropdown_phase_control.jpg)
+
+#### Effect summary tooltip
+
+![](./resources/demo_screen_effect_summary_tooltip.jpg)
 
 ## Module Compatibility
 
@@ -53,6 +88,12 @@ Use the Phase Editor on the Configure Game Settings to define custom phases.
 Options for Combat Tracker
 #### Enable phases
 Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds context menu items in the Combat Tracker that allows for changing the phase of a combatant token. 
+#### Enable change phase for non-GMs
+When checked, players can change phase in Combat Tracker for owned combatants
+#### Default phase for players
+When adding a player token to combat, it will be added to this phase
+#### Default phase for NPCs
+When adding a NPC token to combat, it will be added to this phase
 #### Enable obscure combatant
 When checked, the Combat Tracker will display combatants/information based on module settings and ownership. Applies for non-GMs only.
 #### Add NPC combatants as hidden
@@ -65,6 +106,8 @@ When checked, adding a NPC token to the Combat Tracker will have its name masked
 When checked, GMs can toggle visibility of the combatant token in the Combat Tracker.
 #### Reverse initiative
 Reverse the sorting order for initiative so that lowest goes first.
+#### Enable pan to token for non-GMs
+When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token.
 #### Duplicate combatant
 Add a 'Duplicate Combatant' context menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round.
 #### Enable disposition change
@@ -79,6 +122,12 @@ The maximum number that can be entered into the initiative input field.
 When checked, the Combat Tracker will use the token actors portrait as image instead of the token image. Applies for GMs only.
 #### Use actor portraits for players
 When checked, the Combat Tracker will use the token actors portrait as image instead of the token image. Applies for non-GMs only.
+#### Show combatant effect tooltips
+When checked, combatants active effects in Combat Tracker will have a describing tooltip. If not all effects can be showed, a summary icon with a full list as tooltip replaces all effect icons.
+#### Hide combatant effects for non-GMs
+When checked, combatants active effects in Combat Tracker will only be showed for owned tokens.
+#### Hide token effects for non-GMs
+When checked, token active effects on the Canvas will only be showed for owned tokens.
 #### Show disposition for GMs
 When checked, the Combat Tracker will indicate by color the disposition of the combatant. Applies for GMs only.
 #### Show disposition for players
@@ -118,3 +167,6 @@ Module development according to Foundry Virtual Tabletop [Limited License Agreem
 
 This module is licensed by [Ramses800](https://github.com/Anderware/Foundry-Vtt-Sandbox-Macros) under [AGPL-3.0](https://opensource.org/licenses/AGPL-3.0)
 
+## Queries, comments?
+
+You can find me on the Foundry Discord under the name Ramses800(Ramses800#8517)

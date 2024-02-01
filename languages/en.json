@@ -7,10 +7,33 @@
   "COMBAT.ChangeDispositionToNeutral": "Change disposition to NEUTRAL",
   "COMBAT.ChangeDispositionToHostile": "Change disposition to HOSTILE",
   "COMBAT.ChangeDispositionToSecret": "Change disposition to SECRET",
+  "COMBAT.ChangeDispositionCancel": "Cancel",
   "COMBAT.ChangeDisposition":"Change disposition",
   "COMBAT.ChangePhase":"Change phase to {phasename}",
+  "COMBAT.ChangePhaseCancel": "Cancel",
   "COMBAT.UnknownCombatant": "Unknown",
+  "COMBAT.Phase":"Phase: ",
   "COMBAT.PhaseUnset":"Unset",
+  "COMBAT.PhaseAssign":"Assign combatants to this Phase",
+  "COMBAT.PhaseAssignAll":"Assign all",
+  "COMBAT.PhaseAssignAllPlayers":"Assign players",
+  "COMBAT.PhaseAssignAllNPCs":"Assign NPCs",
+  "COMBAT.MenuUnhideAll":"Reveal all",
+  "COMBAT.MenuUnhidePlayers":"Reveal players",
+  "COMBAT.MenuUnhideNPCs":"Reveal NPCs",
+  "COMBAT.MenuHideAll":"Hide all",
+  "COMBAT.MenuHidePlayers":"Hide players",
+  "COMBAT.MenuHideNPCs":"Hide NPCs",
+  "COMBAT.MenuUnmaskAll":"Unmask all",
+  "COMBAT.MenuUnmaskPlayers":"Unmask players",
+  "COMBAT.MenuUnmaskNPCs":"Unmask NPCs",
+  "COMBAT.MenuMaskAll":"Mask all",
+  "COMBAT.MenuMaskPlayers":"Mask players",
+  "COMBAT.MenuMaskNPCs":"Mask NPCs",
+  "COMBAT.MenuUnsetAll":"Unset all",
+  "COMBAT.MenuUnsetPlayers":"Unset players",
+  "COMBAT.MenuUnsetNPCs":"Unset NPCs",
+  
   "PhaseEditor.Title":"Phase Editor",
   "PhaseEditor.TableHeader.PhaseName.Caption":"Phase Name",
   "PhaseEditor.TableHeader.PhaseIcon.Caption":"Phase Icon",
@@ -34,7 +57,34 @@
       }
     },
     "settings": {
-      
+      "OPTION_CANVAS_TOKEN_HIDE_TOKEN_EFFECTS_FOR_PLAYERS": {
+        "Name": "Hide token effects for non-GMs",
+        "Hint": "When checked, token active effects on the Canvas will only be showed for owned tokens."
+      },
+      "OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS": {
+        "Name": "Hide combatant effects for non-GMs",
+        "Hint": "When checked, combatants active effects in Combat Tracker will only be showed for owned tokens."
+      },
+      "OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS": {
+        "Name": "Show combatant effect tooltips",
+        "Hint": "When checked, combatants active effects in Combat Tracker will have a describing tooltip. If not all effects can be showed, a summary icon with a full list as tooltip replaces all effect icons."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN": {
+        "Name": "Enable pan to token for non-GMs",
+        "Hint": "When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token."
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_CHANGE_PHASE": {
+        "Name": "Enable change phase for non-GMs",
+        "Hint": "When checked, players can change phase in Combat Tracker for owned combatants"
+      },
+      "OPTION_COMBAT_TRACKER_DEFAULT_PHASE_PLAYERS": {
+        "Name": "Default phase for players",
+        "Hint": "When adding a player token to combat, it will be added to this phase"
+      },
+      "OPTION_COMBAT_TRACKER_DEFAULT_PHASE_NPCS": {
+        "Name": "Default phase for NPCs",
+        "Hint": "When adding a NPC token to combat, it will be added to this phase"
+      },
       
       "OPTION_COMBAT_TRACKER_PHASE_EDITOR_FORM": {
         "Name": "Phase Editor",

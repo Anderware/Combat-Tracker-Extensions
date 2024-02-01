@@ -1,0 +1,61 @@
+/* ----------------------------------------- */
+/*  Dropdown Menu
+/* ----------------------------------------- */
+
+/* Needed CSS for function, do not override these */
+#dropdown-menu {
+  position: fixed;
+  z-index: calc(var(--z-index-app) + 11);
+}
+
+/* CSS for visual, can be overriden */
+#dropdown-menu {
+  width: max-content;
+  height: max-content;
+  min-width: 150px;
+  max-width: 360px;
+  background:var(--color-text-dark-header);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 5px;
+  color: var(--color-text-light-1);
+}
+
+#dropdown-menu ol.dropdown-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+
+#dropdown-menu li.dropdown-item {
+  padding: 0 5px;
+  line-height: 32px;
+  font-size: var(--font-size-14);
+  font-family:  var(--font-primary);
+  font-weight: normal;
+  text-shadow: none;
+  white-space: nowrap;
+
+  text-align: left;
+}
+#dropdown-menu li.dropdown-item:hover {
+  cursor: pointer;
+  color: var(--color-text-light-0);
+  text-shadow: 0 0 4px var(--color-shadow-primary);
+
+
+}
+
+#dropdown-menu li.dropdown-item-separator{
+  border-top: 1px solid var(--color-border-light-primary);
+  cursor: default;
+}
+
+#dropdown-menu li.dropdown-item > i {
+  margin-right: 5px;
+}
+.window-app #dropdown-menu {
+  z-index: calc(var(--z-index-window) + 1);
+}
+
+

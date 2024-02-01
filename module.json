@@ -2,14 +2,14 @@
   "id": "combat-tracker-extensions",
   "title": "Combat Tracker Extensions",
   "description": "Add features to Combat Tracker like name hiding, hide/obscure initiative/combatant based on type/disposition/visibility/ownership, reverse initiative order, custom combat phases, multiple combatants for the same token and many more. All features optional and configurable. System-agnostic.",  
-  "version": "1.0",
+  "version": "1.1",
   "compatibility": {
     "minimum": "10",
     "maximum": "11",
     "verified": "11"
   },  
   "manifest": "https://raw.githubusercontent.com/Anderware/Combat-Tracker-Extensions/main/module.json",
-  "download": "https://github.com/Anderware/Combat-Tracker-Extensions/releases/download/v1.0/combat-tracker-extensions.zip",
+  "download": "https://github.com/Anderware/Combat-Tracker-Extensions/releases/download/v1.1/combat-tracker-extensions.zip",
   "changelog": "https://github.com/Anderware/Combat-Tracker-Extensions/blob/main/changelog.md",
   "readme": "https://github.com/Anderware/Combat-Tracker-Extensions/blob/main/readme.md",
   "url": "https://github.com/Anderware/Combat-Tracker-Extensions",
@@ -26,7 +26,8 @@
     "scripts/combat-tracker-extensions.js"
   ],
   "styles": [
-    "styles/combat-tracker-extensions.css"
+    "styles/combat-tracker-extensions.css",
+    "styles/dropdownmenu.css"
   ],
   "languages": [
     {
