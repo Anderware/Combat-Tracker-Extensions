@@ -25,6 +25,7 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 - Custom defined combat phases
   - Allow players to change phase for owned tokens
 
+- Custom defined round set
 - Multiple combatants for the same token
 - Quick input field to modify current initiative value
 - Show combatant disposition by color indication
@@ -55,6 +56,26 @@ Same scenario as demo 2 but with phases disabled
 
 #### Encounter controls
 
+If any options are enabled, a command button is added to the Encounter Controls
+
+From this dropdown it is possible to
+
+- Reveal - will make combatants visible in players Combat Tracker(if not hidden by other settings)
+- Hide - will make combatants hidden in players Combat Tracker
+- Unmask - will make combatants name show in players Combat Tracker
+- Mask - will hide combatants name in players Combat Tracker
+- Unset - will move combatants to the Unset phase
+
+For each command, a sub dropdown menu will open with the following selections possible
+
+- All - the command will affect all combatants in the current encounter
+- All players - the command will only affect player combatants in the current encounter
+- All NPCs  - the command will only affect all NPCs combatants in the current encounter
+- All Friendly NPCs - the command will only affect NPCs combatants with a Friendly disposition in the current encounter
+- All Neutral NPCs - the command will only affect NPCs combatants with a Neutral disposition in the current encounter
+- All Hostile NPCs - the command will only affect NPCs combatants with a Hostile disposition in the current encounter
+- All Secret NPCs - the command will only affect NPCs combatants with a Secret disposition in the current encounter
+
 ![](./resources/demo_screen_dropdown_encounter_control.jpg)
 
 #### Combatant
@@ -63,9 +84,13 @@ Same scenario as demo 2 but with phases disabled
 
 #### Phase Assignment
 
+Each phase has a command control that can assign a group of combatants to it.
+
 ![](./resources/demo_screen_dropdown_phase_control.jpg)
 
 #### Effect summary tooltip
+
+If a combatant has more active effects than can be displayed in the combat tracker, all effects will be replaced by a summary icon. This icon has a tooltip that displays all effects.
 
 ![](./resources/demo_screen_effect_summary_tooltip.jpg)
 
@@ -73,21 +98,35 @@ Same scenario as demo 2 but with phases disabled
 
 Foundry version 10, 11
 
-## Module Features
+## Module Definitions
+
+This module uses two definitions that can be confusing, **Round Set** and **Phases**. The actual label for these functionalities differs between RPG systems but for the module functionality these are the definitions used. Round Set and Phases can be enabled at the same time.
+
+### Round Set
+
+A Round Set is a set of Foundry rounds, meaning you can define phases, segments or whatever your system call them and have the combat tracker go from one round to another and start again with the first round.
+
+Use the Round Set Editor found in the module´s Configure Game Settings to define custom rounds.
+
+![](./resources/roundset-editor-basic.jpg)
 
 ### Phases
 
-This feature divides the Combat Tracker into phases which each has its own initiative order.
+A Phase is a part of a Foundry round. This feature divides the Foundry round into phases which each has its own initiative order. Combatants is assigned to a phase. You can use any naming for phases, it could be like in the example below  or just "Players", "Enemies", "Allies" etc.
 
-Use the Phase Editor on the Configure Game Settings to define custom phases.
+A "Unset" phase is always added to the defined phases and will be the default phase a combatant is assigned to when added to an encounter.
+
+Use the Phase Editor found in the module´s Configure Game Settings to define custom phases.
 
 ![Phase Editor](./resources/phase-editor-basic.jpg)
 
 ## Module Settings
 ### Combat Tracker Options
 Options for Combat Tracker
+#### Enable round set
+Enables custom defined round set for the combat tracker. Each round in the round set has its own phases.
 #### Enable phases
-Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds context menu items in the Combat Tracker that allows for changing the phase of a combatant token. 
+Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds dropdown menu items in the Combat Tracker that allows for changing the phase of a combatant token. 
 #### Enable change phase for non-GMs
 When checked, players can change phase in Combat Tracker for owned combatants
 #### Default phase for players
@@ -109,9 +148,9 @@ Reverse the sorting order for initiative so that lowest goes first.
 #### Enable pan to token for non-GMs
 When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token.
 #### Duplicate combatant
-Add a 'Duplicate Combatant' context menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round.
+Add a 'Duplicate Combatant' dropdown menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round.
 #### Enable disposition change
-Adds context menu items in the Combat Tracker that allows for changing the disposition of a combatant token. Applies for GMs only.
+Adds dropdown menu items in the Combat Tracker that allows for changing the disposition of a combatant token. Applies for GMs only.
 #### Initiative input field
 Replace the normal initiative value with a number input field.
 #### Minimum initiative input allowed

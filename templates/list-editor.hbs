@@ -1,0 +1,55 @@
+<form id="combat-tracker-extensions-list-editor-form" class="combat-tracker-extensions-list-editor-form">
+  <h2 class="module-header" style="padding-top:5px;border-top: 1px solid #b5b3a4;">{{formheader}}</h2>
+
+
+  <!-- Main data container -->
+  <div class="combat-tracker-extensions-list-editor-data-container">
+    <table id="combat-tracker-extensions-list-editor-data-table" class="combat-tracker-extensions-list-editor-data-table"  name="combat-tracker-extensions-list-editor-data-table">
+      <thead id="combat-tracker-extensions-list-editor-data-thead" class="combat-tracker-extensions-list-editor-data-thead">
+        <tr id="combat-tracker-extensions-list-editor-data-thead-row">
+          <th></th>
+          <th>{{localize "ListEditor.TableHeader.ItemName.Caption" }}</th>
+          <th>{{localize "ListEditor.TableHeader.ItemIcon.Caption" }} <i class="fas fa-circle-question" data-tooltip="{{localize "ListEditor.TableHeader.ItemIcon.Hint"}}"></i></th>
+          <th class="combat-tracker-extensions-list-editor-cell-manipulator"></th>
+        </tr>
+      </thead>
+      <tbody id="combat-tracker-extensions-list-editor-data-tbody" class="combat-tracker-extensions-list-editor-data-tbody">
+        {{#each items}}
+        <tr>
+          <td><i class="fas {{this.icon}} combat-tracker-extensions-icon"></i></td>
+          <td><input class="combat-tracker-extensions-list-editor-name-input" type="text" value="{{this.name}}"/></td>
+          <td><input class="combat-tracker-extensions-list-editor-icon-input" type="text" value="{{this.icon}}"</td>
+          <td class="combat-tracker-extensions-list-editor-cell-manipulator">
+            <i class="fas fa-arrow-alt-circle-up combat-tracker-extensions-icon-btn combat-tracker-extensions-list-editor-move-item-up" data-tooltip="{{localize "ListEditor.Button.MoveItemUp.Hint"}}" ></i><i class="fas fa-arrow-alt-circle-down combat-tracker-extensions-icon-btn combat-tracker-extensions-list-editor-move-item-down" data-tooltip="{{localize "ListEditor.Button.MoveItemDown.Hint"}}" ></i><i class="fas fa-trash combat-tracker-extensions-icon-btn combat-tracker-extensions-list-editor-delete-item" data-tooltip="{{localize "ListEditor.Button.DeleteItem.Hint"}}" ></i>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+      <tfoot class="combat-tracker-extensions-list-editor-data-tfoot">
+        <tr id="combat-tracker-extensions-list-editor-footer" class="combat-tracker-extensions-list-editor-footer">
+          <td><i class="fas fa-circle-plus combat-tracker-extensions-icon-btn" id="combat-tracker-extensions-list-editor-add-item" data-tooltip="{{localize "ListEditor.Button.AddItem.Hint"}}" ></i></td>
+          <td></td>
+          <td></td>
+          <td class="combat-tracker-extensions-list-editor-cell-manipulator"></td>
+        </tr>
+      </tfoot>
+        </table>
+        </div>
+
+
+        <!-- Settings Footer -->
+  <footer class="sheet-footer flexrow">
+    <button type="button" name="combat-tracker-extensions-list-editor-update">
+      <i class="fas fa-save"></i> {{localize "ListEditor.Button.Update.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-list-editor-update-and-close">
+      <i class="fas fa-save"></i> {{localize "ListEditor.Button.UpdateAndClose.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-list-editor-close-editor">
+      <i class="fas fa-times"></i> {{localize "ListEditor.Button.Close.Caption"}}
+    </button>
+  </footer>
+
+</form>

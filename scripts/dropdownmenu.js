@@ -1,6 +1,7 @@
 /**
  * DropDownMenu
- * Version 1.0
+ * Version 1.1
+ * Note. MOdified for the combat tracker only
  * 
  */
 
@@ -81,11 +82,11 @@ export class DropDownMenu {
    * @param {string} [options.customClass='']  Optionally css class to add for all dropdown elements 
    */
   constructor(element, selector, menuItems, {eventName = "click", onOpen, onClose, customClass = '',
-          downVerticalAdjustment = 0, upVerticalAdjustment = 0,
+          downVerticalAdjustment = 0, upVerticalAdjustment = 0,leftHorizontalAdjustment=0,rightHorizontalAdjustment=0,
           expandLeft = false,
           expandUp = false,
           expandRight = false,
-          expandDown = false} = {}) {
+          expandDown = false,windowElementSelector=null} = {}) {
 
     /**
      * The target HTMLElement being selected
@@ -125,7 +126,10 @@ export class DropDownMenu {
     this.customClass = customClass;
     this.downVerticalAdjustment = downVerticalAdjustment;
     this.upVerticalAdjustment = upVerticalAdjustment;
+    this.leftHorizontalAdjustment = leftHorizontalAdjustment;
+    this.rightHorizontalAdjustment=rightHorizontalAdjustment;
 
+    this.windowElementSelector=windowElementSelector;
     /**
      * Track which direction the menu is expanded in
      * @type {boolean}
@@ -138,6 +142,8 @@ export class DropDownMenu {
     this.expandRight = expandRight;
     this.expandDown = expandDown;
     this.expandUp = expandUp;
+    
+    
 
     // Bind to the current element
     this.bind();
@@ -182,7 +188,7 @@ export class DropDownMenu {
        * @param {jQuery} html                     The HTML element to which the drop down options are attached
        * @param {DropDownMenuEntry[]} entryOptions The drop down menu entries
        */
-      console.log('dropdown create')
+      //console.log('dropdown create')
       Hooks.call(`get${cls.name}${hookName}`, html, menuItems);
     }
 
@@ -236,6 +242,8 @@ export class DropDownMenu {
   /* -------------------------------------------- */
 
   _close() {
+    const existingSubMenu =document.getElementById("dropdown-submenu");
+    if(existingSubMenu) existingSubMenu.remove();
     for (const item of this.menuItems) {
       delete item.element;
     }
@@ -267,11 +275,14 @@ export class DropDownMenu {
    * @param {jQuery} target     The target element to which the drop down menu is attached
    */
   render(target) {
+   
+    const existingSubMenu =document.getElementById("dropdown-submenu");
+    if(existingSubMenu) existingSubMenu.remove();
     const existing = $("#dropdown-menu");
     let html = existing.length ? existing : $(`<nav id="dropdown-menu" class="dropdown-menu ${this.customClass}"></nav>`);
     let ol = $(`<ol class="dropdown-items ${this.customClass}"></ol>`);
     html.html(ol);
-
+    this.submenuitems = [];
     // Build menu items
     for (let item of this.menuItems) {
 
@@ -285,6 +296,18 @@ export class DropDownMenu {
       let li;
       if (item.separator) {
         li = $(`<li class="dropdown-item-separator"></li>`);
+      } else if (item.submenuitems) {
+        // Construct and add the menu item
+        let name = game.i18n.localize(item.name);
+
+        let tooltip = "";
+        if (item.tooltip != null) {
+          tooltip = item.tooltip;
+        }
+        li = $(`<li class="dropdown-item-submenu ${this.customClass}" data-submenuid="${this.submenuitems.length}" data-tooltip="${tooltip}">${item.icon}${name}<span style="float:right;">&#9654;</span></li>`);
+        li.children("i").addClass("fa-fw");
+        this.submenuitems.push(item.submenuitems);
+
       } else {
         // Construct and add the menu item
         let name = game.i18n.localize(item.name);
@@ -330,15 +353,33 @@ export class DropDownMenu {
    * @private
    */
   _setPosition(html, target) {
+
     const container = target[0].parentElement;
     // Append to target and get the dropdown bounds
     //target.css("position", "relative");
     html.css("visibility", "hidden");
     target.append(html);
-
+    
     const dropdownRect = html[0].getBoundingClientRect();
-    const parentRect = target[0].getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
+    const parentRect = target[0].getBoundingClientRect();        
+    const containerRect = container.getBoundingClientRect();  
+    
+    this._windowElementAdjustTop=0;
+    this._windowElementAdjustBottom=0;
+    this._windowElementAdjustRight=5;
+    if(this.windowElementSelector!=null){
+      const windowElement=$(this.windowElementSelector);
+      
+      const windowElementRect =windowElement[0].getBoundingClientRect();
+      //console.log(windowElementRect)
+      this._windowElementAdjustTop=windowElementRect.top + 1;
+      this._windowElementAdjustBottom=window.innerHeight - windowElementRect.bottom;
+      this._windowElementAdjustRight=0;
+    } 
+    
+   
+    
+
 
     // Determine whether to expand upwards
     let calculatedExpandUp = parentRect.top + dropdownRect.height + parentRect.height > window.innerHeight;
@@ -352,13 +393,13 @@ export class DropDownMenu {
     }
 
     if (expandUp) {
-      const bottom = window.innerHeight - parentRect.top - this.upVerticalAdjustment;
+      const bottom = window.innerHeight - parentRect.top - this.upVerticalAdjustment - this._windowElementAdjustBottom;
       this._expandUp = true;
       html.css("bottom", bottom + "px");
       html.css("top", "unset");
     } else {
 
-      const top = parentRect.top + parentRect.height - this.downVerticalAdjustment;
+      const top = parentRect.top + parentRect.height - this.downVerticalAdjustment - this._windowElementAdjustTop;      
       html.css("top", top + "px");
       html.css("bottom", "unset");
       this._expandUp = false;
@@ -408,9 +449,99 @@ export class DropDownMenu {
    */
   activateListeners(html) {
     html.on("click", "li.dropdown-item", this.#onClickItem.bind(this));
+    html.on("mouseover", "li.dropdown-item", this.#onMouseOverItem.bind(this));
+    html.on("mouseover", "li.dropdown-item-submenu", this.#onMouseOverSubMenu.bind(this));
+    html.on("mouseout", "li.dropdown-item-submenu", this.#onMouseOutItem.bind(this));
   }
 
+  async #onMouseOverItem(event) {
+    //console.log('mouseover'); 
+    event.preventDefault();
+    event.stopPropagation();
+    const existingSubMenu =document.getElementById("dropdown-submenu");
+    if(existingSubMenu) existingSubMenu.remove();
+  }
   /* -------------------------------------------- */
+  async #onMouseOverSubMenu(event) {
+    //console.log('mouseover'); 
+    event.preventDefault();
+    event.stopPropagation();
+    if (!event.target.classList.contains('dropdown-item-submenu'))
+      return;
+    // remove previous
+    const existingSubMenu =document.getElementById("dropdown-submenu");
+    if(existingSubMenu) existingSubMenu.remove();
+    this.submenu = document.createElement("nav");
+    this.submenu.setAttribute('id', 'dropdown-submenu');
+    this.submenu.setAttribute('class', 'dropdown-submenu');
+    const submenuid = event.target.getAttribute('data-submenuid');
+    if (submenuid == null)
+      return;
+
+    let menuItems = this.submenuitems[Number(submenuid)];
+    if (menuItems == null)
+      return;
+    let ol = document.createElement("ol");
+    ol.setAttribute('class', `dropdown-items ${this.customClass}`);
+    this.submenu.appendChild(ol);
+    const target = $(this.#target);
+    for (let item of menuItems) {
+      // Determine menu item visibility (display unless false)
+      let display = true;
+      if (item.condition !== undefined) {
+        display = (item.condition instanceof Function) ? item.condition(target) : item.condition;
+      }
+      if (!display)
+        continue;
+      let li;
+      li = document.createElement("li");
+      if (item.separator) {        
+        li.setAttribute('class', `dropdown-item-separator ${this.customClass}`);
+      } else {
+        // Construct and add the menu item
+        let name = game.i18n.localize(item.name);
+        let tooltip = "";
+        if (item.tooltip != null) {
+          tooltip = item.tooltip;
+        }        
+        li.setAttribute('class', `dropdown-item ${this.customClass}`);
+        li.setAttribute('data-tooltip', tooltip);
+        li.innerHTML = `${item.icon}${name}`;
+        if (item.hasOwnProperty('callback')) {
+          li.addEventListener('click', function () {
+            item.callback(target);
+          });
+        }
+      }
+      ol.append(li);
+    }
+
+    this.element.appendChild(this.submenu);
+    const subitemRect = await event.target.getBoundingClientRect();
+    const submenuRect = await this.submenu.getBoundingClientRect();
+    const mainDropDown = document.getElementById("dropdown-menu");
+    const mainDropDownRect = mainDropDown.getBoundingClientRect();        
+    if(this._expandUp){
+      
+    } else {
+      this.submenu.style.top = `${subitemRect.top - this._windowElementAdjustTop}px`;
+    }
+//    
+//    
+    if(this._expandLeft){
+      
+    } else {
+      //this.submenu.style.left = `${subitemRect.left - submenuRect.width - this._windowElementAdjustRight}px`;    
+      this.submenu.style.left = `${mainDropDownRect.width + this._windowElementAdjustRight}px`;    
+    }
+  }
+
+  #onMouseOutItem(event) {
+    //console.log('mouseout') ;
+    event.preventDefault();
+    event.stopPropagation();
+    //if(this.submenu)this.submenu.remove();
+  }
 
   /**
    * Handle click events on drop down menu items.

@@ -1,4 +1,9 @@
 # Combat Tracker Extensions Change Log
+## Version 1.2(2024-02-06)
+- Added option "Enable round set","Enables custom defined round set for the combat tracker. Each round in the round set has its own phases."
+- Reworked dropdowns, added dropdown items for selection based NPC disposition
+- Reworked dropdowns to align when using "popped-out"(right-clicked) combat tracker
+
 ## Version 1.1(2024-02-01)
 - Added option "Enable pan to token for non-GMs", "When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token."
 - Added option "Show combatant effect tooltips","When checked, combatants active effects in Combat Tracker will have a describing tooltip"

@@ -1,7 +1,7 @@
 
 import { SETTINGATTRIBUTE } from "./setting-constants.js"
 import { CombatTrackerExtensionsPhaseEditorForm } from "./phase-editor-form.js";
-
+import { CombatTrackerExtensionsRoundSetEditorForm } from "./roundset-editor-form.js";
 export function settingsMenus(moduleId) {
 
 }
@@ -18,6 +18,16 @@ export function settingsRegistration(moduleId) {
           hint:  `settings.settings.${SETTINGATTRIBUTE[setting].ID}.Hint`,
           icon:   SETTINGATTRIBUTE[setting].ICON,
           type:   CombatTrackerExtensionsPhaseEditorForm,
+          restricted: true
+        });
+        break;
+      case 'COMBATTRACKEREXTENSIONSROUNDSETEDITORFORM':
+        game.settings.registerMenu(moduleId, SETTINGATTRIBUTE[setting].ID, {
+          name:  `settings.settings.${SETTINGATTRIBUTE[setting].ID}.Name`,
+          label: `settings.settings.${SETTINGATTRIBUTE[setting].ID}.Name`,
+          hint:  `settings.settings.${SETTINGATTRIBUTE[setting].ID}.Hint`,
+          icon:   SETTINGATTRIBUTE[setting].ICON,
+          type:   CombatTrackerExtensionsRoundSetEditorForm,
           restricted: true
         });
         break;

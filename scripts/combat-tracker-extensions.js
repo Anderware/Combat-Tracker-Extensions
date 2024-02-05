@@ -20,7 +20,7 @@ async function _onInit() {
     libWrapper.register(moduleId, 'Combat.prototype._sortCombatants', wrappedSortCombatants);
   }
   if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT.ID)) {
-    libWrapper.register(moduleId, 'CombatTracker.prototype._onToggleDefeatedStatus', wrappedOnToggleDefeatedStatus);    
+    libWrapper.register(moduleId, 'CombatTracker.prototype._onToggleDefeatedStatus', wrappedOnToggleDefeatedStatus);
     libWrapper.register(moduleId, 'Token.prototype._onHoverIn', wrappedOnHoverIn);
     libWrapper.register(moduleId, 'Token.prototype._onHoverOut', wrappedOnHoverOut);
   }
@@ -104,7 +104,7 @@ Hooks.on("preCreateCombatant", async(combatant) => {
   if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
     const OPTION_COMBAT_TRACKER_DEFAULT_PHASE_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_DEFAULT_PHASE_PLAYERS.ID);
     const OPTION_COMBAT_TRACKER_DEFAULT_PHASE_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_DEFAULT_PHASE_NPCS.ID);
-    
+
     let defaultPhaseValue = OPTION_COMBAT_TRACKER_DEFAULT_PHASE_PLAYERS;
     if (combatant.isNPC) {
       defaultPhaseValue = OPTION_COMBAT_TRACKER_DEFAULT_PHASE_NPCS;
@@ -158,8 +158,65 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
   const OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS.ID);
   const OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS.ID);
   const OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT.ID);
-  if (OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT||OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN || OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE || OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE || OPTION_COMBAT_TRACKER_ENABLE_PHASES || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS || OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
+  const OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET.ID);
+
+  if (OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET || OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT || OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN || OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE || OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE || OPTION_COMBAT_TRACKER_ENABLE_PHASES || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS || OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
+    const combatTrackerId=html[0].id;
+    const isPoppedOut = (combatTrackerId=='combat-popout');
+    let downVerticalAdjustment = 0;
+    let upVerticalAdjustment = 0;
+    let leftHorizontalAdjustment=0;
+    let rightHorizontalAdjustment=0;
+    let trackerRect=html[0].getBoundingClientRect();
+    let windowElementSelector=null;
+    if(isPoppedOut){      
+      windowElementSelector='#combat-popout';
+      
+    }
+    let dropDownMenuOptions={
+      downVerticalAdjustment:downVerticalAdjustment,
+      upVerticalAdjustment:upVerticalAdjustment,
+      leftHorizontalAdjustment:leftHorizontalAdjustment,
+      rightHorizontalAdjustment:rightHorizontalAdjustment,
+      windowElementSelector:windowElementSelector
+    };
     
+    if (OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET) {
+      const OPTION_COMBAT_TRACKER_DEFINED_ROUNDSET = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_DEFINED_ROUNDSET.ID);
+      if (OPTION_COMBAT_TRACKER_DEFINED_ROUNDSET.length > 0) {
+        let definedRoundSet = JSON.parse(OPTION_COMBAT_TRACKER_DEFINED_ROUNDSET);
+        if (definedRoundSet != null) {
+          // get current round
+          const  currentRound = combatTracker?.viewed?.round ?? 0;
+          if (currentRound > 0) {
+            const roundSetCount = definedRoundSet.rounds.length;
+            let adjustedRound = Math.ceil(currentRound / roundSetCount);  // 
+
+            let currentRoundSetRound = (currentRound % roundSetCount);                 // remainder
+            if (currentRoundSetRound == 0)
+              currentRoundSetRound = roundSetCount;
+            const roundName = definedRoundSet.rounds[currentRoundSetRound - 1].name;
+            //const roundIcon = `<i class="fas ${definedRoundSet.rounds[currentRoundSetRound - 1].icon}"></i>`;
+            const encounterTitle = html.find('.encounter-title')[0];
+            // replace it 
+            encounterTitle.innerHTML = `${roundName}`;
+            // build tooltip
+            let roundTooltip=`<div class="combat-tracker-extensions-roundset-current-round-set">Round Set ${adjustedRound}</div><ul class="combat-tracker-extensions-roundset-tooltip">`;
+            for (var i = 0; i < definedRoundSet.rounds.length; i++) {
+              let currentRoundMarker=``;
+              if(i == currentRoundSetRound - 1){
+                currentRoundMarker=`<i class="fas fa-right-long"></i>`;
+              } 
+              roundTooltip +=`<li><span class="combat-tracker-extensions-roundset-current-turn-marker">${currentRoundMarker}</span><i class="fas ${definedRoundSet.rounds[i].icon}"></i> ${definedRoundSet.rounds[i].name}</li>`;
+            }
+            roundTooltip +=`</ul>`;
+            roundTooltip +=`<div class="combat-tracker-extensions-roundset-current-round">Foundry Round ${currentRound}</div>`;
+            encounterTitle.setAttribute('data-tooltip',roundTooltip);
+          }
+        }
+      }
+    }
+
     let definedPhases = null;
     if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
       const OPTION_COMBAT_TRACKER_DEFINED_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_DEFINED_PHASES.ID);
@@ -179,20 +236,20 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       const combatant = await game.combat.combatants.get(combatantElement.dataset.combatantId);
       //console.log(combatant);
       const token = await combatant.token;
-      
+
       //console.log(token);
       const combatantPhase = combatant.flags?.combattrackerextensions?.phase ?? 999;
       //console.log(token.name, combatantPhase);
-      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {        
-        for (let i = currentPhase; i < definedPhases.phases.length && i <= combatantPhase; i++) {          
+      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
+        for (let i = currentPhase; i < definedPhases.phases.length && i <= combatantPhase; i++) {
           let phaseLi = document.createElement('LI');
-          if(currentPhase==0){
+          if (currentPhase == 0) {
             phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-first flexrow');
-          } else  if(currentPhase < combatantPhase){
+          } else if (currentPhase < combatantPhase) {
             phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-before flexrow');
-          } else if(currentPhase == combatantPhase){
+          } else if (currentPhase == combatantPhase) {
             phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-same flexrow');
-          } else{
+          } else {
             phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-after flexrow');
           }
           let phaseDiv = document.createElement('DIV');
@@ -202,16 +259,16 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           phaseTitle.setAttribute('class', 'combat-tracker-extensions-menu-phase-name');
           phaseTitle.innerHTML = `<i class="fas ${definedPhases.phases[i].icon}"></i> ${definedPhases.phases[i].name}`;
           phaseDiv.appendChild(phaseTitle);
-          let menuItems=null;
-          if (game.user.isGM) {       
+          let menuItems = null;
+          if (game.user.isGM) {
             let aCallGroup = document.createElement('A');
-            menuItems = createAssignPhase(aCallGroup,combatTracker, i);
+            menuItems = createAssignPhase(aCallGroup, combatTracker, i);
             phaseTitle.appendChild(aCallGroup);
           }
           phaseLi.appendChild(phaseDiv);
           let inserted = combatantOl.insertBefore(phaseLi, combatantElement);
-          if(menuItems!=null){
-            new DropDownMenu(phaseLi, `#combat-tracker-extensions-menu-phase-${i}`, menuItems);
+          if (menuItems != null) {
+            new DropDownMenu(phaseLi, `#combat-tracker-extensions-menu-phase-${i}`, menuItems,dropDownMenuOptions);
           }
           currentPhase = combatantPhase + 1;
         }
@@ -336,7 +393,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           let inserted = combatantControlsDiv.insertBefore(aMask, lastChild);
         }
       }
-      
+
       let tokenEffects = combatantElement.getElementsByClassName('token-effects')[0];
       if (OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || (!game.user.isGM && OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS && !token.isOwner)) {
         // delete all default img for token effects               
@@ -346,80 +403,80 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         // add new ones for all appiledeffects
         const combatantControlsDiv = combatantElement.getElementsByClassName('combatant-controls')[0];
         //console.log(token.name,combatantControlsDiv.childElementCount)
-        const controlCount=combatantControlsDiv.childElementCount;
+        const controlCount = combatantControlsDiv.childElementCount;
         // assemble effects
         let effects = [];
-        
-        let addEffect=function(effects,effectName, effectIcon){
-          const result = effects.filter(y=>(y.name == effectName && y.icon == effectIcon));
-          if (result.length == 0){
-            effects.push({name:effectName,icon:effectIcon});            
+
+        let addEffect = function (effects, effectName, effectIcon) {
+          const result = effects.filter(y => (y.name == effectName && y.icon == effectIcon));
+          if (result.length == 0) {
+            effects.push({name: effectName, icon: effectIcon});
           }
         };
-        let nameProperty="label"; // foundry 10 uses "label"
+        let nameProperty = "label"; // foundry 10 uses "label"
         if (isNewerVersion(game.version, 11)) {
-          nameProperty="name"; // foundry 11 uses "name"
+          nameProperty = "name"; // foundry 11 uses "name"
         }
         // check if token is invisible and add that as an effect
-        if(token.hidden){
+        if (token.hidden) {
           //effects.add({name:game.i18n.localize("EFFECT.StatusInvisible"),icon:"icons/svg/invisible.svg"});
-          addEffect(effects,game.i18n.localize("EFFECT.StatusInvisible"),"icons/svg/invisible.svg");
+          addEffect(effects, game.i18n.localize("EFFECT.StatusInvisible"), "icons/svg/invisible.svg");
         }
-        
-        if ( combatant.token ) {
+
+        if (combatant.token) {
           for (const effect of combatant.token.effects) {
             //effects.add({name:effect.label,icon:effect.icon});
-            addEffect(effects,effect[nameProperty],effect.icon);
-          }                    
+            addEffect(effects, effect[nameProperty], effect.icon);
+          }
         }
-        if ( combatant.token.overlayEffect ) {
+        if (combatant.token.overlayEffect) {
           //effects.add({name:"Overlay",icon:combatant.token.overlayEffect});
-          addEffect(effects,"Overlay",combatant.token.overlayEffect);
+          addEffect(effects, "Overlay", combatant.token.overlayEffect);
         }
-        if ( combatant.actor ) {
-          for ( const effect of combatant.actor.temporaryEffects ) {
+        if (combatant.actor) {
+          for (const effect of combatant.actor.temporaryEffects) {
             // ignore "EFFECT.StatusDead"
-            if ( effect.name != game.i18n.localize("EFFECT.StatusDead") ){
-              
-              addEffect(effects,effect[nameProperty],effect.icon);
+            if (effect.name != game.i18n.localize("EFFECT.StatusDead")) {
+
+              addEffect(effects, effect[nameProperty], effect.icon);
             }
           }
         }
         //console.log(token.name,effects);      
-        const effectCount=effects.length;
-        let maxIcons=10;
-        if(game.user.isGM){
-          maxIcons=10;
-        }else{
-          maxIcons=11;
+        const effectCount = effects.length;
+        let maxIcons = 10;
+        if (game.user.isGM) {
+          maxIcons = 10;
+        } else {
+          maxIcons = 11;
         }
-        let appliedEffectsTooltip='';                        
+        let appliedEffectsTooltip = '';
         for (var i = 0; i < effectCount; i++) {
           appliedEffectsTooltip += `<div class="combat-tracker-extensions-appliedeffect-tooltip"><img class="combat-tracker-extensions-appliedeffect-icon" src="${effects[i].icon}"><span class="combat-tracker-extensions-appliedeffect-name">${effects[i].name}</span></div>`;
-          if (controlCount + effectCount  <= maxIcons) {            
+          if (controlCount + effectCount <= maxIcons) {
             let imgEffect = document.createElement('img');
             imgEffect.setAttribute('class', 'token-effect');
             imgEffect.setAttribute('data-tooltip', effects[i].name);
             imgEffect.setAttribute('src', effects[i].icon);
             tokenEffects.appendChild(imgEffect);
           }
-        }      
-        
-        if (appliedEffectsTooltip.length > 0 && (controlCount + effectCount > maxIcons)){
+        }
+
+        if (appliedEffectsTooltip.length > 0 && (controlCount + effectCount > maxIcons)) {
           // too many effects, wont fit, add a summary icon
           //console.log(appliedEffectsTooltip)
           const lastChild = combatantControlsDiv.lastElementChild;
-          let aActiveEffects= document.createElement("A");         
-          aActiveEffects.setAttribute('class', 'combat-tracker-extensions-combatant-control active');                    
+          let aActiveEffects = document.createElement("A");
+          aActiveEffects.setAttribute('class', 'combat-tracker-extensions-combatant-control active');
           aActiveEffects.setAttribute('data-tooltip', appliedEffectsTooltip);
           let iActiveEffects = document.createElement("I");
           iActiveEffects.setAttribute('class', 'fas fa-circle-info');
-          aActiveEffects.appendChild(iActiveEffects);        
-          let inserted = combatantControlsDiv.insertBefore(aActiveEffects, lastChild);        
+          aActiveEffects.appendChild(iActiveEffects);
+          let inserted = combatantControlsDiv.insertBefore(aActiveEffects, lastChild);
         }
       }
-      
-      if (!game.user.isGM){
+
+      if (!game.user.isGM) {
         // --------------------------------
         // for non-GMs
         // --------------------------------
@@ -553,7 +610,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           };
           menuItems.push(phasemenuItem);
         }
-       
+
       }
       // TOKEN INVISIBILITY
       if (OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE && game.user.isGM) {
@@ -561,32 +618,32 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         let invisibleIcon;
         let initImg = combatantElement.getElementsByClassName('token-image')[0];
         if (isTokenInVisible) {
-          invisibleIcon= 'far fa-user';         
-        } else {          
-          invisibleIcon= 'fas fa-user';          
+          invisibleIcon = 'far fa-user';
+        } else {
+          invisibleIcon = 'fas fa-user';
         }
         menuItems.push({separator: true});
-        menuItem={
-            name: "COMBAT.ToggleTokenVisibility",
-            icon: `<i class="${invisibleIcon}"></i>`,
-            
-            callback: a => {
-              const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
-              const token = combatant.token;
-              token.update({hidden: !isTokenInVisible});
-            }
-          };
+        menuItem = {
+          name: "COMBAT.ToggleTokenVisibility",
+          icon: `<i class="${invisibleIcon}"></i>`,
+
+          callback: a => {
+            const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
+            const token = combatant.token;
+            token.update({hidden: !isTokenInVisible});
+          }
+        };
         menuItems.push(menuItem);
-        
+
       }
-      
+
       // -----------------
       // CHANGE DISPOSTION
       // -----------------
       if (OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE && game.user.isGM) {
         const tokenDisposition = token.disposition;
         menuItems.push({separator: true});
-        let menuItemsDisposition = [          
+        let menuItemsDisposition = [
           {
             name: "COMBAT.ChangeDispositionToFriendly",
             icon: '<i class="fas fa-face-smile"></i>',
@@ -630,7 +687,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
 
         ];
         menuItems = menuItems.concat(menuItemsDisposition);
-        
+
       }
       if (OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT && game.user.isGM) {
         menuItems.push({separator: true});
@@ -639,7 +696,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           icon: '<i class="far fa-copy"></i>',
           callback: a => {
             const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
-            combatTracker.viewed.createEmbeddedDocuments("Combatant", [combatant]);              
+            combatTracker.viewed.createEmbeddedDocuments("Combatant", [combatant]);
           }
         };
         menuItems.push(menuItemAddDuplicate);
@@ -651,12 +708,12 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
             _getCombatantsSharingToken(combatant)
                     .forEach(c => c.delete());
-            return true;              
-          }                   
+            return true;
+          }
         };
         menuItems.push(menuItemRemoveAllDuplicates);
       }
-      
+
       // -----------------------------------------------------------------------
       // menu completed
       // -----------------------------------------------------------------------
@@ -681,16 +738,16 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         iCTE.setAttribute('data-tooltip', moduleTitle);
         aCTE.appendChild(iCTE);
         combatantControlsDiv.insertBefore(aCTE, firstChild);
-        new DropDownMenu(combatantControlsDiv, `#combat-tracker-extensions-menu-${combatant.id}`, menuItems);
+        new DropDownMenu(combatantControlsDiv, `#combat-tracker-extensions-menu-${combatant.id}`, menuItems,dropDownMenuOptions);
       }
     }
     // Add final phases not already added(with no assigned combatants)
     if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
       for (let i = currentPhase; i < definedPhases.phases.length; i++) {
         let phaseLi = document.createElement('LI');
-        if(i==0){
+        if (i == 0) {
           phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-first-unused flexrow');
-        } else if(i==definedPhases.phases.length-1){
+        } else if (i == definedPhases.phases.length - 1) {
           phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-last flexrow');
         } else {
           phaseLi.setAttribute('class', 'combat-tracker-extensions-phase combat-tracker-extensions-phase-unused flexrow');
@@ -703,225 +760,504 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         phaseTitle.appendChild(phaseIcon);
         phaseTitle.innerHTML = `<i class="fas ${definedPhases.phases[i].icon}"></i> ${definedPhases.phases[i].name}`;
         phaseDiv.appendChild(phaseTitle);
-        let menuItems=null;
-          if (game.user.isGM) {       
-            let aCallGroup = document.createElement('A');
-            menuItems = createAssignPhase(aCallGroup,combatTracker, i);
-            phaseTitle.appendChild(aCallGroup);
-          }
-        
+        let menuItems = null;
+        if (game.user.isGM) {
+          let aCallGroup = document.createElement('A');
+          menuItems = createAssignPhase(aCallGroup, combatTracker, i);
+          phaseTitle.appendChild(aCallGroup);
+        }
+
         phaseLi.appendChild(phaseDiv);
         let inserted = combatantOl.appendChild(phaseLi);
-        if(menuItems!=null){
-            new DropDownMenu(phaseLi, `#combat-tracker-extensions-menu-phase-${i}`, menuItems);
-          }
-        
+        if (menuItems != null) {
+          new DropDownMenu(phaseLi, `#combat-tracker-extensions-menu-phase-${i}`, menuItems,dropDownMenuOptions);
+        }
+
       }
     }
-    // add super tools for gms
-    if (game.user.isGM) {
-      const encounterControls=html.find('.encounter-controls')[0];
+    // add super tools for gms. but only if there is an encounter(otherwise any command will get error)
+    if (game.user.isGM && combatTracker.viewed!=null) {
+      const encounterControls = html.find('.encounter-controls')[0];
       const firstChild = encounterControls.firstElementChild;
       let aCTE = document.createElement("a");
       aCTE.setAttribute('class', 'combat-button combat-control');
-      aCTE.setAttribute('id', 'combat-tracker-extensions-control-menu');
-      
+      aCTE.setAttribute('id', `combat-tracker-extensions-control-menu-${combatTrackerId}`);
+
       let iCTE = document.createElement("i");
       iCTE.setAttribute('class', 'fas fa-square-ellipsis-vertical');
       iCTE.setAttribute('data-tooltip', moduleTitle);
       aCTE.appendChild(iCTE);
       encounterControls.insertBefore(aCTE, firstChild);
-      let menuItems=[
+      let menuItems = [
         {
-          name:"COMBAT.MenuUnhideAll",
-          icon:'<i class="fas fa-eye"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) {          
-              await combatant.update({hidden: false});
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuUnhidePlayers",
-          icon:'<i class="fas fa-eye"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) { 
-              if (!combatant.isNPC) {
-                await combatant.update({hidden: false});
+          name: "COMBAT.MenuReveal",
+          icon: '<i class="fas fa-eye"></i>',
+          submenuitems: [
+            {
+              name: "COMBAT.SelectorAll",
+              icon: '<i class="fas fa-head-side fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  await combatant.update({hidden: false});
+                }
+              }
+            },
+            {separator: true},
+            {
+              name: "COMBAT.SelectorAllPlayers",
+              icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (!combatant.isNPC) {
+                    await combatant.update({hidden: false});
+                  }
+                }
+              }
+            },
+            {separator: true},
+            {
+              name: "COMBAT.SelectorAllNPCs",
+              icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC) {
+                    await combatant.update({hidden: false});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsFriendly",
+              icon: '<i class="fas fa-face-smile fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                    await combatant.update({hidden: false});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsNeutral",
+              icon: '<i class="fas fa-face-meh fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                    await combatant.update({hidden: false});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsHostile",
+              icon: '<i class="fas fa-face-angry fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                    await combatant.update({hidden: false});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsSecret",
+              icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+              condition: isNewerVersion(game.version, 11),
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                    await combatant.update({hidden: false});
+                  }
+                }
               }
             }
-          }
-        },
+          ]
+        }
+        ,
         {
-          name:"COMBAT.MenuUnhideNPCs",
-          icon:'<i class="fas fa-eye"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) { 
-              if (combatant.isNPC) {
-                await combatant.update({hidden: false});
+          name: "COMBAT.MenuHide",
+          icon: '<i class="fas fa-eye-slash"></i>',
+          submenuitems: [
+            {
+              name: "COMBAT.SelectorAll",
+              icon: '<i class="fas fa-head-side fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  await combatant.update({hidden: true});
+                }
+              }
+            },
+            {separator: true},
+            {
+              name: "COMBAT.SelectorAllPlayers",
+              icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (!combatant.isNPC) {
+                    await combatant.update({hidden: true});
+                  }
+                }
+              }
+            },
+            {separator: true},
+            {
+              name: "COMBAT.SelectorAllNPCs",
+              icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC) {
+                    await combatant.update({hidden: true});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsFriendly",
+              icon: '<i class="fas fa-face-smile fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                    await combatant.update({hidden: true});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsNeutral",
+              icon: '<i class="fas fa-face-meh fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                    await combatant.update({hidden: true});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsHostile",
+              icon: '<i class="fas fa-face-angry fa-fw"></i>',
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                    await combatant.update({hidden: true});
+                  }
+                }
+              }
+            },
+            {
+              name: "COMBAT.SelectorAllNPCsSecret",
+              icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+              condition: isNewerVersion(game.version, 11),
+              callback: async a => {
+                for (const combatant of combatTracker.viewed.combatants) {
+                  if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                    await combatant.update({hidden: true});
+                  }
+                }
               }
             }
-          }
-        },
-        {
-          separator:true
-        },
-        {
-          name:"COMBAT.MenuHideAll",
-          icon:'<i class="fas fa-eye-slash"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) {          
-              await combatant.update({hidden: true});
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuHidePlayers",
-          icon:'<i class="fas fa-eye-slash"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) { 
-                if (!combatant.isNPC) {
-                  await combatant.update({hidden: true});
-                }
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuHideNPCs",
-          icon:'<i class="fas fa-eye-slash"></i>',
-          callback:async a => {
-              for (const combatant of combatTracker.viewed.combatants) { 
-                if (combatant.isNPC) {
-                  await combatant.update({hidden: true});
-                }
-            }
-          }
+          ]
         }
       ];
       if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING) {
-        let menuMaskItems=[
-        {
-          separator:true
-        },
-        {
-          name:"COMBAT.MenuUnmaskAll",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              let flagUnknown = {combattrackerextensions: {maskname: false}}; 
-              await combatant.update({flags: flagUnknown});                                           
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuUnmaskPlayers",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              if (!combatant.isNPC) {
-                let flagUnknown = {combattrackerextensions: {maskname: false}};                
-                await combatant.update({flags: flagUnknown});                              
+        let menuMaskItems = [
+
+          {
+            name: "COMBAT.MenuUnMask",
+            icon: '<i class="fas fa-glasses"></i>',
+            submenuitems: [
+              {
+                name: "COMBAT.SelectorAll",
+                icon: '<i class="fas fa-head-side fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    let flagUnknown = {combattrackerextensions: {maskname: false}};
+                    await combatant.update({flags: flagUnknown});
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllPlayers",
+                icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (!combatant.isNPC) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllNPCs",
+                icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsFriendly",
+                icon: '<i class="fas fa-face-smile fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsNeutral",
+                icon: '<i class="fas fa-face-meh fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsHostile",
+                icon: '<i class="fas fa-face-angry fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsSecret",
+                icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+                condition: isNewerVersion(game.version, 11),
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                      let flagUnknown = {combattrackerextensions: {maskname: false}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
               }
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuUnmaskNPCs",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              if (combatant.isNPC) {
-                let flagUnknown = {combattrackerextensions: {maskname: false}};                
-                await combatant.update({flags: flagUnknown});                             
+            ]
+          },
+
+          {
+            name: "COMBAT.MenuMask",
+            icon: '<i class="fas fa-mask"></i>',
+            submenuitems: [
+              {
+                name: "COMBAT.SelectorAll",
+                icon: '<i class="fas fa-head-side fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    let flagUnknown = {combattrackerextensions: {maskname: true}};
+                    await combatant.update({flags: flagUnknown});
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllPlayers",
+                icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (!combatant.isNPC) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllNPCs",
+                icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsFriendly",
+                icon: '<i class="fas fa-face-smile fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsNeutral",
+                icon: '<i class="fas fa-face-meh fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsHostile",
+                icon: '<i class="fas fa-face-angry fa-fw"></i>',
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsSecret",
+                icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+                condition: isNewerVersion(game.version, 11),
+                callback: async a => {
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                      let flagUnknown = {combattrackerextensions: {maskname: true}};
+                      await combatant.update({flags: flagUnknown});
+                    }
+                  }
+                }
               }
-            }
+            ]
           }
-        },
-        {separator:true},
-        {
-          name:"COMBAT.MenuMaskAll",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              let flagUnknown = {combattrackerextensions: {maskname: true}};                
-              await combatant.update({flags: flagUnknown});                            
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuMaskPlayers",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              if (!combatant.isNPC) {
-                let flagUnknown = {combattrackerextensions: {maskname: true}};                
-                await combatant.update({flags: flagUnknown});                               
-              }
-            }
-          }
-        },
-        {
-          name:"COMBAT.MenuMaskNPCs",
-          icon:'<i class="fas fa-mask"></i>',
-          callback:async a => {
-            for (const combatant of combatTracker.viewed.combatants) { 
-              if (combatant.isNPC) {
-                let flagUnknown = {combattrackerextensions: {maskname: true}};                
-                await combatant.update({flags: flagUnknown});                              
-              }
-            }
-          }
-        }
         ];
         menuItems = menuItems.concat(menuMaskItems);
       }
-      
-      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null){
+
+      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
         aCTE.setAttribute('data-unset-phase-index', definedPhases.phases.length - 1);
-        let phaseMenuItems=[
-          {separator:true},
+        let phaseMenuItems = [
+
           {
-            name:"COMBAT.MenuUnsetAll",
-            icon:'<i class="fas fa-question"></i>',
-            callback: async a => {
-              const phaseIndex = a.data("unset-phase-index");          
-              for (const combatant of combatTracker.viewed.combatants) {
-                const flags = {combattrackerextensions: {phase: phaseIndex}};
-                await combatant.update({flags: flags});
-              }        
-            }
-          },
-          {
-            name:"COMBAT.MenuUnsetPlayers",
-            icon:'<i class="fas fa-question"></i>',
-            callback: async a => {
-              const phaseIndex = a.data("unset-phase-index");          
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (!combatant.isNPC) {
-                  const flags = {combattrackerextensions: {phase: phaseIndex}};
-                  await combatant.update({flags: flags});
-                }        
+            name: "COMBAT.MenuUnset",
+            icon: '<i class="fas fa-question"></i>',
+            submenuitems: [
+              {
+                name: "COMBAT.SelectorAll",
+                icon: '<i class="fas fa-head-side fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    const flags = {combattrackerextensions: {phase: phaseIndex}};
+                    await combatant.update({flags: flags});
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllPlayers",
+                icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (!combatant.isNPC) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
+              },
+              {separator: true},
+              {
+                name: "COMBAT.SelectorAllNPCs",
+                icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsFriendly",
+                icon: '<i class="fas fa-face-smile fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsNeutral",
+                icon: '<i class="fas fa-face-meh fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsHostile",
+                icon: '<i class="fas fa-face-angry fa-fw"></i>',
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
+              },
+              {
+                name: "COMBAT.SelectorAllNPCsSecret",
+                icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+                condition: isNewerVersion(game.version, 11),
+                callback: async a => {
+                  const phaseIndex = a.data("unset-phase-index");
+                  for (const combatant of combatTracker.viewed.combatants) {
+                    if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                      const flags = {combattrackerextensions: {phase: phaseIndex}};
+                      await combatant.update({flags: flags});
+                    }
+                  }
+                }
               }
-            }
-          },
-          {
-            name:"COMBAT.MenuUnsetNPCs",
-            icon:'<i class="fas fa-question"></i>',
-            callback: async a => {
-              const phaseIndex = a.data("unset-phase-index");          
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC) {
-                  const flags = {combattrackerextensions: {phase: phaseIndex}};
-                  await combatant.update({flags: flags});
-                }        
-              }
-            }
+            ]
           }
         ];
         menuItems = menuItems.concat(phaseMenuItems);
       }
-        
-      new DropDownMenu(encounterControls, `#combat-tracker-extensions-control-menu`, menuItems,{downVerticalAdjustment:9});
+      // should offset downvertical by 9
+      dropDownMenuOptions.downVerticalAdjustment=9;
+      new DropDownMenu(encounterControls, `#combat-tracker-extensions-control-menu-${combatTrackerId}`, menuItems, dropDownMenuOptions);
+      
     }
   }
 });
@@ -936,8 +1272,8 @@ Hooks.on('refreshToken', async (token, options) => {
   }
 });
 
-function createAssignPhase(aCallGroup,combatTracker, phaseIndex) {
-  
+function createAssignPhase(aCallGroup, combatTracker, phaseIndex) {
+
   aCallGroup.setAttribute('id', 'combat-tracker-extensions-menu-phase-' + phaseIndex);
   aCallGroup.setAttribute('data-phase-index', phaseIndex);
   aCallGroup.setAttribute('class', 'combat-tracker-extensions-menu-phase-assign');
@@ -948,17 +1284,20 @@ function createAssignPhase(aCallGroup,combatTracker, phaseIndex) {
 
   let menuItems = [
     {
-      name: "COMBAT.PhaseAssignAll",
+      name: "COMBAT.SelectorAll",
       icon: '<i class="fas fa-head-side"></i>',
       callback: async a => {
-        const phaseIndex = a.data("phase-index");          
+        const phaseIndex = a.data("phase-index");
         for (const combatant of combatTracker.viewed.combatants) {
           const flags = {combattrackerextensions: {phase: phaseIndex}};
           await combatant.update({flags: flags});
-        }        
+        }
       }
-    }, {
-      name: "COMBAT.PhaseAssignAllPlayers",
+    },
+
+    {separator: true},
+    {
+      name: "COMBAT.SelectorAllPlayers",
       icon: '<i class="fas fa-head-side-brain"></i>',
       callback: async a => {
         const phaseIndex = a.data("phase-index");
@@ -970,9 +1309,11 @@ function createAssignPhase(aCallGroup,combatTracker, phaseIndex) {
         }
       }
     },
+    {separator: true},
+
     {
-      name: "COMBAT.PhaseAssignAllNPCs",
-      icon: '<i class="fa-solid fa-head-side-virus"></i>',
+      name: "COMBAT.SelectorAllNPCs",
+      icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
       callback: async a => {
         const phaseIndex = a.data("phase-index");
         for (const combatant of combatTracker.viewed.combatants) {
@@ -982,7 +1323,62 @@ function createAssignPhase(aCallGroup,combatTracker, phaseIndex) {
           }
         }
       }
+    },
+    {
+      name: "COMBAT.SelectorAllNPCsFriendly",
+      icon: '<i class="fas fa-face-smile fa-fw"></i>',
+      callback: async a => {
+        const phaseIndex = a.data("phase-index");
+        for (const combatant of combatTracker.viewed.combatants) {
+          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+            const flags = {combattrackerextensions: {phase: phaseIndex}};
+            await combatant.update({flags: flags});
+          }
+        }
+      }
+    },
+    {
+      name: "COMBAT.SelectorAllNPCsNeutral",
+      icon: '<i class="fas fa-face-meh fa-fw"></i>',
+      callback: async a => {
+        const phaseIndex = a.data("phase-index");
+        for (const combatant of combatTracker.viewed.combatants) {
+          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+            const flags = {combattrackerextensions: {phase: phaseIndex}};
+            await combatant.update({flags: flags});
+          }
+        }
+      }
+    },
+    {
+      name: "COMBAT.SelectorAllNPCsHostile",
+      icon: '<i class="fas fa-face-angry fa-fw"></i>',
+      callback: async a => {
+        const phaseIndex = a.data("phase-index");
+        for (const combatant of combatTracker.viewed.combatants) {
+          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+            const flags = {combattrackerextensions: {phase: phaseIndex}};
+            await combatant.update({flags: flags});
+          }
+        }
+      }
+    },
+    {
+      name: "COMBAT.SelectorAllNPCsSecret",
+      icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
+      condition: isNewerVersion(game.version, 11),
+      callback: async a => {
+        const phaseIndex = a.data("phase-index");
+        for (const combatant of combatTracker.viewed.combatants) {
+          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+            const flags = {combattrackerextensions: {phase: phaseIndex}};
+            await combatant.update({flags: flags});
+          }
+        }
+      }
     }
+
+
   ];
   return menuItems;
 }

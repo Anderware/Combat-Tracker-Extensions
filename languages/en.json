@@ -3,48 +3,52 @@
   "COMBAT.ToggleTokenVisibility":"Toggle Token Visibility",
   "COMBAT.DuplicateCombatant": "Duplicate Combatant",
   "COMBAT.RemoveAllDuplicates": "Remove All Duplicates",
-  "COMBAT.ChangeDispositionToFriendly": "Change disposition to FRIENDLY",
-  "COMBAT.ChangeDispositionToNeutral": "Change disposition to NEUTRAL",
-  "COMBAT.ChangeDispositionToHostile": "Change disposition to HOSTILE",
-  "COMBAT.ChangeDispositionToSecret": "Change disposition to SECRET",
+  "COMBAT.ChangeDispositionToFriendly": "Change disposition to Friendly",
+  "COMBAT.ChangeDispositionToNeutral": "Change disposition to Neutral",
+  "COMBAT.ChangeDispositionToHostile": "Change disposition to Hostile",
+  "COMBAT.ChangeDispositionToSecret": "Change disposition to Secret",
   "COMBAT.ChangeDispositionCancel": "Cancel",
   "COMBAT.ChangeDisposition":"Change disposition",
   "COMBAT.ChangePhase":"Change phase to {phasename}",
   "COMBAT.ChangePhaseCancel": "Cancel",
   "COMBAT.UnknownCombatant": "Unknown",
   "COMBAT.Phase":"Phase: ",
+  "COMBAT.SelectorAll":"All",
+  "COMBAT.SelectorAllPlayers":"All players",
+  "COMBAT.SelectorAllNPCs":"All NPCs",
+  "COMBAT.SelectorAllNPCsFriendly":"All Friendly NPCs",
+  "COMBAT.SelectorAllNPCsNeutral":"All Neutral NPCs",
+  "COMBAT.SelectorAllNPCsHostile":"All Hostile NPCs",
+  "COMBAT.SelectorAllNPCsSecret":"All Secret NPCs",
+  
+  "COMBAT.MenuUnset":"Unset",
+  "COMBAT.MenuMask":"Mask",
+  "COMBAT.MenuUnMask":"Unmask",
+  "COMBAT.MenuHide":"Hide",
+  "COMBAT.MenuReveal":"Reveal",
+  
   "COMBAT.PhaseUnset":"Unset",
   "COMBAT.PhaseAssign":"Assign combatants to this Phase",
   "COMBAT.PhaseAssignAll":"Assign all",
-  "COMBAT.PhaseAssignAllPlayers":"Assign players",
-  "COMBAT.PhaseAssignAllNPCs":"Assign NPCs",
-  "COMBAT.MenuUnhideAll":"Reveal all",
-  "COMBAT.MenuUnhidePlayers":"Reveal players",
-  "COMBAT.MenuUnhideNPCs":"Reveal NPCs",
-  "COMBAT.MenuHideAll":"Hide all",
-  "COMBAT.MenuHidePlayers":"Hide players",
-  "COMBAT.MenuHideNPCs":"Hide NPCs",
-  "COMBAT.MenuUnmaskAll":"Unmask all",
-  "COMBAT.MenuUnmaskPlayers":"Unmask players",
-  "COMBAT.MenuUnmaskNPCs":"Unmask NPCs",
-  "COMBAT.MenuMaskAll":"Mask all",
-  "COMBAT.MenuMaskPlayers":"Mask players",
-  "COMBAT.MenuMaskNPCs":"Mask NPCs",
-  "COMBAT.MenuUnsetAll":"Unset all",
-  "COMBAT.MenuUnsetPlayers":"Unset players",
-  "COMBAT.MenuUnsetNPCs":"Unset NPCs",
+  "COMBAT.PhaseAssignAllPlayers":"Assign all players",
+  "COMBAT.PhaseAssignNPCs":"Assign NPCs",
   
-  "PhaseEditor.Title":"Phase Editor",
-  "PhaseEditor.TableHeader.PhaseName.Caption":"Phase Name",
-  "PhaseEditor.TableHeader.PhaseIcon.Caption":"Phase Icon",
-  "PhaseEditor.TableHeader.PhaseIcon.Hint":"A Font Awesome CSS class, example 'fa-sparkles'",
-  "PhaseEditor.Button.AddPhase.Hint":"Add Phase",
-  "PhaseEditor.Button.MovePhaseUp.Hint":"Move up",
-  "PhaseEditor.Button.MovePhaseDown.Hint":"Move down",
-  "PhaseEditor.Button.DeletePhase.Hint":"Delete phase",
-  "PhaseEditor.Button.Close.Caption":"Close",
-  "PhaseEditor.Button.Update.Caption":"Save",
-  "PhaseEditor.Button.UpdateAndClose.Caption":"Save and close",
+ 
+  
+  "RoundSetEditor.Title":"Round Set Editor",
+  "PhaseEditor.Title":"Phases Editor",
+  
+  "ListEditor.Title":"List Editor",
+  "ListEditor.TableHeader.ItemName.Caption":"Name",
+  "ListEditor.TableHeader.ItemIcon.Caption":"Icon",
+  "ListEditor.TableHeader.ItemIcon.Hint":"A Font Awesome CSS class, example 'fa-sparkles'",
+  "ListEditor.Button.AddItem.Hint":"Add",
+  "ListEditor.Button.MoveItemUp.Hint":"Move up",
+  "ListEditor.Button.MoveItemDown.Hint":"Move down",
+  "ListEditor.Button.DeleteItem.Hint":"Delete",
+  "ListEditor.Button.Close.Caption":"Close",
+  "ListEditor.Button.Update.Caption":"Save",
+  "ListEditor.Button.UpdateAndClose.Caption":"Save and close",
   "settings": {
     "categories": {
       "GENERAL_OPTIONS": {
@@ -90,9 +94,22 @@
         "Name": "Phase Editor",
         "Hint": "Opens the Phase Editor"
       },
+      "OPTION_COMBAT_TRACKER_ROUNDSET_EDITOR_FORM": {
+        "Name": "Round Set Editor",
+        "Hint": "Opens the Round Set Editor"
+      },
+      "OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET": {
+        "Name": "Enable round set",
+        "Hint": "Enables custom defined round set for the combat tracker. Each round in the round set has its own phases."
+      },
+      "OPTION_COMBAT_TRACKER_DEFINED_ROUNDSET": {
+        "Name": "Defined round set",
+        "Hint": "Custom defined round set with rounds for the combat tracker. A string with a valid JSON expression. "
+      },
+      
       "OPTION_COMBAT_TRACKER_ENABLE_PHASES": {
         "Name": "Enable phases",
-        "Hint": "Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds context menu items in the Combat Tracker that allows for changing the phase of a combatant token. "
+        "Hint": "Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds dropdown menu items in the Combat Tracker that allows for changing the phase of a combatant token. "
       },
       "OPTION_COMBAT_TRACKER_DEFINED_PHASES": {
         "Name": "Defined phases",
@@ -100,7 +117,7 @@
       },
       "OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE": {
         "Name": "Enable disposition change",
-        "Hint": "Adds context menu items in the Combat Tracker that allows for changing the disposition of a combatant token. Applies for GMs only."
+        "Hint": "Adds dropdown menu items in the Combat Tracker that allows for changing the disposition of a combatant token. Applies for GMs only."
       },
       "OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS": {
         "Name": "Use actor portraits for GMs",
@@ -152,7 +169,7 @@
       },
       "OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT": {
         "Name": "Duplicate combatant",
-        "Hint": "Add a 'Duplicate Combatant' context menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round."
+        "Hint": "Add a 'Duplicate Combatant' dropdown menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round."
       },
       "OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD": {
         "Name": "Initiative input field",

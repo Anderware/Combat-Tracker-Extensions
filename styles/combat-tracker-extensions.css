@@ -145,14 +145,14 @@
   text-shadow: 0 0 8px var(--color-shadow-primary);
 }
 
-.combat-tracker-extensions-phase-editor-data-thead>tr>th{
+.combat-tracker-extensions-list-editor-data-thead>tr>th{
   text-align:left;
 }
 
-.combat-tracker-extensions-phase-editor-cell-manipulator{
+.combat-tracker-extensions-list-editor-cell-manipulator{
   width:60px;
 }
-.combat-tracker-extensions-phase-editor-data-container{
+.combat-tracker-extensions-list-editor-data-container{
   height: calc(100% - 80px);
 }
 
@@ -197,5 +197,32 @@
   color: var(--color-text-light-6);
   float:right;	
   margin-right:4px;
+}
+
+.combat-sidebar .combat-tracker-header div.encounter-controls .encounter-title {
+   margin-left: 0px;
+}
+
+ul.combat-tracker-extensions-roundset-tooltip{
+  list-style: none;
+  margin: 3px 0 3px 0;
+  padding: 0;
+}
+
+ul.combat-tracker-extensions-roundset-tooltip li{
+  white-space: nowrap;
+  text-align: left;
+}
+
+span.combat-tracker-extensions-roundset-current-turn-marker{
+  min-width:25px;
+  width:25px;
+  display:inline-block;
+}
+.combat-tracker-extensions-roundset-current-round{
+  white-space: nowrap;
+  text-align: left;
+  font-size: var(--font-size-12);
+  margin-top:5px;
 }
 
