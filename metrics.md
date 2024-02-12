@@ -18,3 +18,5 @@
 ## The Forge
 
 [![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fcombat-tracker-extensions&colorB=006400&style=for-the-badge)](https://forge-vtt.com/bazaar#package=combat-tracker-extensions)
+
+![Static Badge](https://img.shields.io/badge/https%3A%2F%2Fimg.shields.io%2Fbadge%2Fany_text-Ramses800-blue?style=for-the-badge&logo=discord&label=%40Foundry%20Discord&color=%235865F2&link=https%3A%2F%2Fdiscordapp.com%2Fusers%2F783401137281564692)
