@@ -1,0 +1,7 @@
+<form id="combat-tracker-extensions-color-picker-form" class="combat-tracker-extensions-color-picker-form">
+  <div class="combat-tracker-extensions-color-picker-data-container">
+    {{#each colors}}
+    <span class="combat-tracker-extensions-color-picker-color {{#if this.selected}} combat-tracker-extensions-color-picker-color-selected {{/if}}" style="background-color:{{this.hex}}" data-tooltip="{{this.name}}" data-color-value="{{this.hex}}"></span>
+    {{/each}}
+  </div>  
+</form>

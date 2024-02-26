@@ -1,0 +1,70 @@
+
+{{#*inline "settingPartial"}}
+<div class="form-group">
+    <label class="module-settings-setting-name">{{this.name}}</label>
+    <div class="form-fields">
+
+        {{#if this.isCheckbox}}
+        <input type="checkbox" name="{{this.id}}" data-dtype="Boolean" {{checked this.value}}/>
+
+        {{else if this.isSelect}}
+        <select name="{{this.id}}">
+            {{#select this.value}}
+            {{#each this.choices as |name k|}}
+            <option value="{{k}}">{{localize name}}</option>
+            {{/each}}
+            {{/select}}
+        </select>
+
+        {{else if this.isRange}}
+        <input type="range" name="{{this.id}}" data-dtype="Number" value="{{ this.value }}"
+               min="{{ this.range.min }}" max="{{ this.range.max }}" step="{{ this.range.step }}"/>
+        <span class="range-value">{{this.value}}</span>
+
+        {{else if this.filePicker}}
+        {{filePicker target=this.id type=this.filePickerType}}
+        <input type="text" name="{{this.id}}" value="{{this.value}}" data-dtype="{{this.type}}"/>
+
+        {{else}}
+        <input type="text" name="{{this.id}}" value="{{this.value}}" data-dtype="{{this.type}}"/>
+        {{/if}}
+    </div>
+
+    <p class="notes">{{{this.hint}}}</p>
+</div>
+{{/inline}}
+
+<form style="height:100%">
+    
+    <h2 class="module-header module-settings-module-header" style="">{{module_name}} </h2><h3 class="module-header module-settings-module-header" style="float:right"> <a class="module-settings-category-toggle-all" id="module-settings-category-expand-all" title="Expand all" ><i class="far fa-plus-square"></i> All</a> <a class="module-settings-category-toggle-all" id="module-settings-category-collapse-all" title="Collapse all"><i class="far fa-minus-square"></i> All</a></h3> 
+    <div class="module-settings-module-content" style="">              
+      {{#modulesettings_eachProperty categories}}
+        <div class="module-settings-category" id="module-settings-category-{{property}}">
+        <h3 class="module-settings-category-header"><a class="module-settings-category-toggle" id="module-settings-category-toggle-{{property}}" data-target="{{property}}" ><i  id="module-settings-category-toggle-icon-{{property}}" data-target="{{property}}" class="module-settings-category-toggle-icon far fa-plus-square"></i> {{localize (modulesettings_concat  property ".Name")  }}</a></h3>
+          <p class="notes">{{{localize (modulesettings_concat property ".Hint") }}}</p> 
+          <div class="module-settings-category-settings" id="module-settings-category-settings-{{property}}">
+            {{#each value}}
+              {{> settingPartial}}
+            {{/each}}
+          </div>
+        </div>   
+      {{/modulesettings_eachProperty }}  
+        
+    </div>
+      <!-- Settings Footer -->
+    <footer class="sheet-footer flexrow">
+        <button type="submit" name="submit">
+            <i class="fas fa-save"></i> {{localize 'SETTINGS.Save'}}
+        </button>
+        <button type="button" name="enablealloptions">
+            <i class="fas fa-check-double"></i> Enable All
+        </button>
+        <button type="button" name="disablealloptions">
+            <i class="fas fa-ban"></i></i> Disable All
+        </button>
+        <button type="button" name="reset">
+            <i class="fas fa-undo"></i> {{localize 'SETTINGS.Reset'}}
+        </button>
+    </footer>
+
+</form>

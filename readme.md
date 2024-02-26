@@ -1,6 +1,4 @@
-![Supported Foundry Versions](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https://raw.githubusercontent.com/Anderware/Combat-Tracker-Extensions/main/module.json&style=for-the-badge)![Supported Game Systems](https://img.shields.io/endpoint?url=https%3A%2F%2Ffoundryshields.com%2Fsystem%3FnameType%3Dfull%26showVersion%3D1%26style%3Dfor-the-badge%26url%3Dhttps%3A%2F%2Fraw.githubusercontent.com%2FAnderware%2FCombat-Tracker-Extensions%2Fmain%2Fmodule.json)[![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fcombat-tracker-extensions&colorB=006400&style=for-the-badge)](https://forge-vtt.com/bazaar#package=combat-tracker-extensions)
-
-![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/latest/combat-tracker-extensions.zip?style=for-the-badge)![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/combat-tracker-extensions.zip?style=for-the-badge)
+![Supported Foundry Versions](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https://raw.githubusercontent.com/Anderware/Combat-Tracker-Extensions/main/module.json&style=for-the-badge)![Supported Game Systems](https://img.shields.io/endpoint?url=https%3A%2F%2Ffoundryshields.com%2Fsystem%3FnameType%3Dfull%26showVersion%3D1%26style%3Dfor-the-badge%26url%3Dhttps%3A%2F%2Fraw.githubusercontent.com%2FAnderware%2FCombat-Tracker-Extensions%2Fmain%2Fmodule.json)![GitHub Release](https://img.shields.io/github/v/release/Anderware/Combat-Tracker-Extensions?style=for-the-badge&label=Latest%20release&color=%23ff6400)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ramses800) 
 
@@ -22,6 +20,10 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 - Change token disposition/visibility from Combat Tracker
 - Hide Active Effects for tokens on the canvas and/or the Combat Tracker
 - Reverse initiative order
+- Combatant Groups
+  - With or without Shared Initiative(Group Initiative) 
+  - Shows combatant group/shared initiative by color indication
+
 - Custom defined combat phases
   - Allow players to change phase for owned tokens
 
@@ -31,6 +33,15 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 - Show combatant disposition by color indication
 - Show token actor portrait instead of token portrait
 - Pan to token in Combat Tracker for players
+- Select, pan and zoom to type/group combatants for GMs
+
+### Queries, bugs, suggestions, comments?
+
+[Ramses800(Ramses800#8517)@Foundry Discord Server](https://discordapp.com/users/783401137281564692)
+
+[Discussion on GitHub](https://github.com/Anderware/Combat-Tracker-Extensions/discussions)
+
+## Demo screens
 
 ### Demo screen 1
 
@@ -52,9 +63,9 @@ Same scenario as demo 2 but with phases disabled
 
 ![](./resources/demo_screen_3.jpg)
 
-### Dropdown menus
+## Dropdown menus
 
-#### Encounter controls
+#### Encounter control dropdown
 
 If any options are enabled, a command button is added to the Encounter Controls
 
@@ -62,9 +73,10 @@ From this dropdown it is possible to
 
 - Reveal - will make combatants visible in players Combat Tracker(if not hidden by other settings)
 - Hide - will make combatants hidden in players Combat Tracker
+- Select - will select combatants tokens on the canvas and pan and zoom to fit them on screen
 - Unmask - will make combatants name show in players Combat Tracker
 - Mask - will hide combatants name in players Combat Tracker
-- Unset - will move combatants to the Unset phase
+- To Unset - will move combatants to the Unset phase
 
 For each command, a sub dropdown menu will open with the following selections possible
 
@@ -75,8 +87,19 @@ For each command, a sub dropdown menu will open with the following selections po
 - All Neutral NPCs - the command will only affect NPCs combatants with a Neutral disposition in the current encounter
 - All Hostile NPCs - the command will only affect NPCs combatants with a Hostile disposition in the current encounter
 - All Secret NPCs - the command will only affect NPCs combatants with a Secret disposition in the current encounter
+- If Groups is used, any groups will also added.
 
 ![](./resources/demo_screen_dropdown_encounter_control.jpg)
+
+##### Module Settings
+
+The Encounter Control Dropdown also have shortcuts to 
+
+- Module settings
+- If Round Set is enabled, the Round set Editor
+- If Phases is enabled, the Phases Editor
+
+![](./resources/settings_encounter_control.jpg)
 
 #### Combatant
 
@@ -84,9 +107,13 @@ For each command, a sub dropdown menu will open with the following selections po
 
 #### Phase Assignment
 
-Each phase has a command control that can assign a group of combatants to it.
+Each phase has a command control that can assign(move) a selection of combatants to it.
 
 ![](./resources/demo_screen_dropdown_phase_control.jpg)
+
+##### Random from Unset
+
+This will take a random combatant from the Unset phase. Combatants in a group that shares the initiative and option for Phase sharing enabled, will be handled as a single combatant and if selected by the random dice, all members of that group will be assigned to the same phase.
 
 #### Effect summary tooltip
 
@@ -106,7 +133,7 @@ This module uses two definitions that can be confusing, **Round Set** and **Phas
 
 A Round Set is a set of Foundry rounds, meaning you can define phases, segments or whatever your system call them and have the combat tracker go from one round to another and start again with the first round.
 
-Use the Round Set Editor found in the module´s Configure Game Settings to define custom rounds.
+Use the Round Set Editor found in the module´s Configure Game Settings or, when Round Set is enabled, the Encounter Control Dropdown, to define custom rounds.
 
 ![](./resources/roundset-editor-basic.jpg)
 
@@ -114,87 +141,211 @@ Use the Round Set Editor found in the module´s Configure Game Settings to defin
 
 A Phase is a part of a Foundry round. This feature divides the Foundry round into phases which each has its own initiative order. Combatants is assigned to a phase. You can use any naming for phases, it could be like in the example below  or just "Players", "Enemies", "Allies" etc.
 
-A "Unset" phase is always added to the defined phases and will be the default phase a combatant is assigned to when added to an encounter.
+A "Unset" phase is always added to the defined phases and will be the default phase a combatant is assigned to when added to an encounter. The name displayed for the Unset phase can be changed in settings.
 
-Use the Phase Editor found in the module´s Configure Game Settings to define custom phases.
+Use the Phase Editor found in the module´s Configure Game Settings or, when Phases is enabled, the Encounter Control Dropdown, to define custom phases.
 
 ![Phase Editor](./resources/phase-editor-basic.jpg)
 
+### Combatant Groups
+
+Groups comes in two major flavors, groups that shares initiative and groups that does not share initiatives
+
+#### Non-sharing groups
+
+Indicated by a dashed left border.
+
+Combatants in a non-sharing group are treated as any other combatant. The grouping is merely a logical extension to be used for helping the GM to keep gangs/bands/strike teams etc  together.
+
+![](./resources/group_non_sharing.jpg)
+
+#### Initiative sharing groups
+
+Indicated by a solid left border
+
+Combatants in a sharing group is handles as a single combatant, if initiative (or phase if option is checked) is changed for one combatant in the group, the others are updated to match.
+
+![](./resources/group_sharing.jpg)
+
+#### Creating group
+
+##### Encounter Control Dropdown
+
+![](./resources/group_create_encounter_control.jpg)
+
+###### Create new group
+
+Create a new group with no members
+
+###### Create group from type
+
+Creates a group based on all combatants of that type. If group already exist, it will be updated
+
+- Players
+- NPCs
+- Friendly NPCs
+- Neutral NPCs
+- Hostile NPCs
+- Secret NPCs
+
+##### Combatant Dropdown
+
+![](./resources/group_create_combatant_control.jpg)
+
+###### Create group from token
+
+Creates group from selected token and joins all combatants with this token to the created group. If group already exist, it will be updated.
+
+###### Create group from actor
+
+Creates group from selected actor and joins all combatants with this actor to the created group. If group already exist, it will be updated.
+
+###### Create group from actor folder
+
+Creates group from selected actor folder and joins all combatants with actors in the same folder to the created group. If group already exist, it will be updated.
+
+###### Join [group name]
+
+Joins the selected combatant to the group
+
+##### Edit groups from Encounter Control
+
+![](./resources/group_edit_encounter_control.jpg)
+
+###### Clear all groups
+
+This will remove all members from all existing groups. Groups will remain.
+
+###### Delete all groups
+
+This will remove all members from all existing groups and delete all groups.
+
+###### Edit [group name]
+
+Opens the group editor form for selected group
+
+##### Edit group from combatant
+
+![](./resources/group_leave_combatant_control.jpg)
+
+###### Edit [group name]
+
+Opens the group editor form for selected group
+
+###### Leave [group name]
+
+This will set the combatant to ungrouped.
+
 ## Module Settings
-### Combat Tracker Options
-Options for Combat Tracker
-#### Enable round set
-Enables custom defined round set for the combat tracker. Each round in the round set has its own phases.
-#### Enable phases
-Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds dropdown menu items in the Combat Tracker that allows for changing the phase of a combatant token. 
-#### Enable change phase for non-GMs
-When checked, players can change phase in Combat Tracker for owned combatants
-#### Default phase for players
-When adding a player token to combat, it will be added to this phase
-#### Default phase for NPCs
-When adding a NPC token to combat, it will be added to this phase
-#### Enable obscure combatant
-When checked, the Combat Tracker will display combatants/information based on module settings and ownership. Applies for non-GMs only.
-#### Add NPC combatants as hidden
-When checked, adding a NPC token to the Combat Tracker will be added as hidden.
-#### Enable name masking
-When checked, GMs can toggle masking the name of combatants for non-GMs in the Combat Tracker.
-#### Add NPC combatants with name masked
-When checked, adding a NPC token to the Combat Tracker will have its name masked for non-GMs. Only used if[Enable name masking] is checked.
-#### Enable visibility toggle
-When checked, GMs can toggle visibility of the combatant token in the Combat Tracker.
+
+![](./resources/settings_module.jpg)
+
+### General Options
+General options
 #### Reverse initiative
 Reverse the sorting order for initiative so that lowest goes first.
+#### Enable round set
+Enables custom defined round set for the combat tracker. Each round in the round set has its own phases.
+### Commands Options
+Basic command(dropdown) options
+#### Enable base menu commands
+Enable base dropdown menu commands.
+#### Enable visibility toggle
+When checked, GMs can toggle visibility of the combatant token in the Combat Tracker.
 #### Enable pan to token for non-GMs
 When checked, players can click a combatant in Combat Tracker and the canvas will pan to its token.
 #### Duplicate combatant
 Add a 'Duplicate Combatant' dropdown menu item in the Combat Tracker that allows each token to have multiple combatants to give the possibility to get multiple actions in the same round.
 #### Enable disposition change
 Adds dropdown menu items in the Combat Tracker that allows for changing the disposition of a combatant token. Applies for GMs only.
+### Phases Options
+Options for Phases
+#### Enable phases
+Enables custom defined phases for the combat tracker. Each phase has its own initiative order. Adds dropdown menu items in the Combat Tracker that allows for changing the phase of a combatant token. 
+#### Unset phase name
+The name(caption) to be shown for the Unset phase
+#### Enable change phase for non-GMs
+When checked, players can change phase in Combat Tracker for owned combatants
+#### Default phase for players
+When adding a player token to combat, it will be added to this phase.(First phase is 0)
+#### Default phase for NPCs
+When adding a NPC token to combat, it will be added to this phase.(First phase is 0)
+#### Enable phase assignment random
+When checked, the Phase Assignment dropdown will have a entry for randomly selecting a unset combatant.
+### Group Options
+Options for combatant groups
+#### Enable combatants groups
+Enable grouping of combatants.
+#### New groups shares initiative
+When checked, new groups will be created with Shared Initiative enabled as default. Only used if [Enable combatants groups] is enabled
+#### Sharing Groups also share phase
+When checked, combatants in a group that shares inititative also share phase. Only used if [Enable combatants groups] is enabled
+### Input Options
+Initiative input options
 #### Initiative input field
 Replace the normal initiative value with a number input field.
 #### Minimum initiative input allowed
 The minimum number that can be entered into the initiative input field.
 #### Maximum initiative input allowed
 The maximum number that can be entered into the initiative input field.
+### Display Options
+General display options
 #### Use actor portraits for GMs
 When checked, the Combat Tracker will use the token actors portrait as image instead of the token image. Applies for GMs only.
 #### Use actor portraits for players
 When checked, the Combat Tracker will use the token actors portrait as image instead of the token image. Applies for non-GMs only.
 #### Show combatant effect tooltips
 When checked, combatants active effects in Combat Tracker will have a describing tooltip. If not all effects can be showed, a summary icon with a full list as tooltip replaces all effect icons.
-#### Hide combatant effects for non-GMs
-When checked, combatants active effects in Combat Tracker will only be showed for owned tokens.
-#### Hide token effects for non-GMs
-When checked, token active effects on the Canvas will only be showed for owned tokens.
 #### Show disposition for GMs
 When checked, the Combat Tracker will indicate by color the disposition of the combatant. Applies for GMs only.
 #### Show disposition for players
 When checked, the Combat Tracker will indicate by color the disposition of the combatant. Applies for non-GMs only.
+### Obscuring Options
+Options for obscuring combatant information for players. Owned tokens are never obscured
+#### Enable obscure combatant
+When checked, the Combat Tracker will display combatants/information based on module settings and ownership. Applies for non-GMs only.
 #### Obscure combatant by visibility
 When checked, the Combat Tracker will only display combatants that has token visible for the user. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
 #### Obscure combatant by disposition
 When checked, the Combat Tracker will display combatants/information for tokens based on their disposition and current settings. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show FRIENDLY combatants initiative
-If unchecked, combatants with FRIENDLY token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show NEUTRAL combatants initiative
-If unchecked, combatants with NEUTRAL token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show HOSTILE combatants initiative
-If unchecked, combatants with HOSTILE token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show SECRET combatants initiative
-If unchecked, combatants with SECRET token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show FRIENDLY combatants
-If unchecked, combatants with FRIENDLY token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show NEUTRAL combatants
-If unchecked, combatants with NEUTRAL token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show HOSTILE combatants
-If unchecked, combatants with HOSTILE token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show SECRET combatants
-If unchecked, combatants with SECRET token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show NPCs combatants
-If unchecked, NPC combatants will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
-#### Show non-NPCs combatants
-If unchecked, non-NPC combatants will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Add NPC combatants as hidden
+When checked, adding a NPC token to the Combat Tracker will be added as hidden.
+#### Enable name masking
+When checked, GMs can toggle masking the name of combatants for non-GMs in the Combat Tracker.
+#### Add NPC combatants with name masked
+When checked, adding a NPC token to the Combat Tracker will have its name masked for non-GMs. Only used if[Enable name masking] is checked.
+#### Hide combatant effects for non-GMs
+When checked, combatants active effects in Combat Tracker will only be showed for owned tokens.
+#### Hide token effects for non-GMs
+When checked, token active effects on the Canvas will only be showed for owned tokens.
+#### Hide FRIENDLY combatants initiative
+If checked, combatants with FRIENDLY token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide NEUTRAL combatants initiative
+If checked, combatants with NEUTRAL token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide HOSTILE combatants initiative
+If checked, combatants with HOSTILE token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide SECRET combatants initiative
+If checked, combatants with SECRET token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide players combatants initiative
+If checked, player combatants will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide FRIENDLY combatants
+If checked, combatants with FRIENDLY token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide NEUTRAL combatants
+If checked, combatants with NEUTRAL token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide HOSTILE combatants
+If checked, combatants with HOSTILE token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide SECRET combatants
+If checked, combatants with SECRET token disposition will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide NPCs combatants
+If checked, NPC combatants will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+#### Hide non-NPCs combatants
+If checked, non-NPC combatants will not be shown in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
+
+## Module background
+
+As some may know, I am the current developer of the system building Foundry System [Sandbox](https://foundryvtt.com/packages/sandbox)
+
+Sometime we make the occasional system with Sandbox that has some other way of handling initiatives so when I the other week went to look for a module to have different combat phases with reversed initiative order, I could not find anything that suited my needs. Being a Foundry programmer, I just thought to myself. "Hey, that cant be so hard to throw something together".  So, I started writing a module for it and of course, other ideas/functions crept in and turned that into a larger thing than originally intended. And thus, the "Combat Tracker Extensions" was born.
 
 ## Source code used
 
@@ -205,7 +356,3 @@ Combat Tracker Extension is built on a base from  [Reverse Initiative Order](htt
 Module development according to Foundry Virtual Tabletop [Limited License Agreement for Module Development](https://foundryvtt.com/article/license)
 
 This module is licensed by [Ramses800](https://github.com/Anderware/Foundry-Vtt-Sandbox-Macros) under [AGPL-3.0](https://opensource.org/licenses/AGPL-3.0)
-
-## Queries, comments?
-
-You can find me on the Foundry Discord under the name Ramses800(Ramses800#8517)

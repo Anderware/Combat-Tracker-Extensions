@@ -1,7 +1,8 @@
 import { getModuleSetting } from "./settings-registration.js";
 import { SETTINGATTRIBUTE } from "./setting-constants.js"
-        const moduleId = 'combat-tracker-extensions';
+const moduleId = 'combat-tracker-extensions';
 const moduleTitle = 'Combat Tracker Extensions';
+import { getInitiativeGroup,getInitiativeGroupCombatants,getCombatInitiativeGroup } from "./initiative-groups.js"
 
 
 // Custom sorting based on settings
@@ -9,6 +10,7 @@ export function wrappedSortCombatants(wrapped, a, b) {
   //console.log(`wrappedSortCombatants | sorting ${a.token.name}, ${b.token.name}`)
   const OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE.ID);
   const OPTION_COMBAT_TRACKER_ENABLE_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID);
+  const OPTION_COMBAT_TRACKER_ENABLE_GROUPS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_GROUPS.ID);
   let unsetInitiativeValue = -Infinity;
   if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {
     unsetInitiativeValue = Infinity;
@@ -16,20 +18,28 @@ export function wrappedSortCombatants(wrapped, a, b) {
 
   const initiativeA = Number.isNumeric(a.initiative) ? a.initiative : unsetInitiativeValue;
   const initiativeB = Number.isNumeric(b.initiative) ? b.initiative : unsetInitiativeValue;
+  const nameA = a.token?.name ?? '';
+  const nameB = b.token?.name ?? '';
+  let groupIdA='';
+  let groupIdB='';
+  if(OPTION_COMBAT_TRACKER_ENABLE_GROUPS){
+    groupIdA = a.flags.combattrackerextensions?.initiativegroup?.id ?? '';
+    groupIdB = b.flags.combattrackerextensions?.initiativegroup?.id ?? '';
+  }
 
   if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
     const phaseA = Number.isNumeric(a.flags.combattrackerextensions?.phase) ? a.flags.combattrackerextensions?.phase : -Infinity;
     const phaseB = Number.isNumeric(b.flags.combattrackerextensions?.phase) ? b.flags.combattrackerextensions?.phase : -Infinity;
-    if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {
-      return phaseA - phaseB || initiativeA - initiativeB || a.token.name.localeCompare(b.token.name) || a.tokenId - b.tokenId;
+    if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {      
+      return phaseA - phaseB || initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     } else {
-      return phaseA - phaseB || initiativeB - initiativeA || a.token.name.localeCompare(b.token.name) || a.tokenId - b.tokenId;
+      return phaseA - phaseB || initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     }
   } else {
     if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {
-      return initiativeA - initiativeB || a.token.name.localeCompare(b.token.name) || a.tokenId - b.tokenId;
+      return initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     } else {
-      return initiativeB - initiativeA || a.token.name.localeCompare(b.token.name) || a.tokenId - b.tokenId;
+      return initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     }
   }
 }
@@ -134,3 +144,54 @@ export function wrappedDisplayScrollingStatus(wrapped,enabled) {
     }
   
 }
+
+
+  /**
+   * Roll initiative for all combatants which have not already rolled
+   * @param {object} [options={}]   Additional options forwarded to the Combat.rollInitiative method
+   */
+  export async function wrappedRollAll(wrapped,options) {
+    const ids = this.combatants.reduce((ids, c) => {
+      if ( c.isOwner && (c.initiative === null) && isNotAMemberORFirstMemberOfAGroup(this,c) ) 
+        ids.push(c.id);      
+      return ids;
+    }, []);
+    return this.rollInitiative(ids, options);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Roll initiative for all non-player actors who have not already rolled
+   * @param {object} [options={}]   Additional options forwarded to the Combat.rollInitiative method
+   */
+  export async function wrappedRollNPC(wrapped,options={}) {
+    const ids = this.combatants.reduce((ids, c) => {
+      if ( c.isOwner && c.isNPC && (c.initiative === null) && isNotAMemberORFirstMemberOfAGroup(this,c)) 
+        ids.push(c.id);      
+      return ids;
+    }, []);
+    return this.rollInitiative(ids, options);
+  }
+
+  /* -------------------------------------------- */
+  
+  function isNotAMemberORFirstMemberOfAGroup(combat,combatant){
+    // check if in a in a group
+    const groupid = getInitiativeGroup(combatant);
+    if(groupid==null){
+      return true;
+    }  
+    const initiativeGroup = getCombatInitiativeGroup(combatant.combat, groupid);
+    if (!initiativeGroup.sharesinitiative) {
+      return true;
+    }
+    const initiativeGroupCombatants = getInitiativeGroupCombatants(combat, groupid);
+    if(initiativeGroupCombatants.length<1){
+      return true;
+    }
+    if(initiativeGroupCombatants[0].id==combatant.id){
+      return true;
+    }
+    return false;
+  }

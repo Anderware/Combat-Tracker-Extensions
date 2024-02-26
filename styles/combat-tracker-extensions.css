@@ -170,7 +170,8 @@
 
 
 
-.combat-tracker-extensions-appliedeffect-tooltip {
+.combat-tracker-extensions-appliedeffect-tooltip,
+.combat-tracker-extensions-initiativegroup-tooltip{
   text-align:center;
   display: flex;
   align-content: center;
@@ -180,12 +181,14 @@
   align-items: center;
 }
 
-.combat-tracker-extensions-appliedeffect-icon{
+.combat-tracker-extensions-appliedeffect-icon,
+.combat-tracker-extensions-initiativegroup-icon{
   height:20px;
   line-height:20px;
 }
 
-.combat-tracker-extensions-appliedeffect-name{
+.combat-tracker-extensions-appliedeffect-name,
+.combat-tracker-extensions-initiativegroup-name{
   line-height:20px;
   margin-left:3px;
   font-size:14px;
@@ -226,3 +229,32 @@ span.combat-tracker-extensions-roundset-current-turn-marker{
   margin-top:5px;
 }
 
+.combat-tracker-extensions-group-editor-token-image{
+  object-fit: cover !important;
+  object-position: 50% 0!important;
+  border: none;
+  height:48px;
+  width:48px
+}
+
+span.combat-tracker-extensions-color-picker-color {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+}
+
+span.combat-tracker-extensions-color-picker-color-selected{
+  border:2px dotted black;
+}
+
+.combat-tracker-extensions-group-editor-color-value{
+  max-width:80px;
+}
+
+.combat-tracker-extensions-menu-icon{
+  border:none;
+  height:22px;
+  width:22px;
+  border-radius: unset;
+  vertical-align: text-bottom;
+}

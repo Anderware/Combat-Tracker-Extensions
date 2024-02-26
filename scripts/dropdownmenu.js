@@ -304,7 +304,9 @@ export class DropDownMenu {
         if (item.tooltip != null) {
           tooltip = item.tooltip;
         }
-        li = $(`<li class="dropdown-item-submenu ${this.customClass}" data-submenuid="${this.submenuitems.length}" data-tooltip="${tooltip}">${item.icon}${name}<span style="float:right;">&#9654;</span></li>`);
+        //li = $(`<li class="dropdown-item-submenu ${this.customClass}" data-submenuid="${this.submenuitems.length}" data-tooltip="${tooltip}">${item.icon}${name}<span style="float:right;">&#9654;</span></li>`);
+        li = $(`<li class="dropdown-item-submenu ${this.customClass}" data-submenuid="${this.submenuitems.length}">${item.icon}${name}<span style="float:right;">&#9654;</span></li>`);
+        li.attr('data-tooltip',tooltip);
         li.children("i").addClass("fa-fw");
         this.submenuitems.push(item.submenuitems);
 
@@ -316,7 +318,9 @@ export class DropDownMenu {
         if (item.tooltip != null) {
           tooltip = item.tooltip;
         }
-        li = $(`<li class="dropdown-item ${this.customClass}" data-tooltip="${tooltip}">${item.icon}${name}</li>`);
+        //li = $(`<li class="dropdown-item ${this.customClass}" data-tooltip="${tooltip}">${item.icon}${name}</li>`);
+        li = $(`<li class="dropdown-item ${this.customClass}">${item.icon}${name}</li>`);
+        li.attr('data-tooltip',tooltip);
         li.children("i").addClass("fa-fw");
       }
       ol.append(li);

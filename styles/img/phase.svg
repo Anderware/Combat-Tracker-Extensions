@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   fill="#ffffff"
+   width="64px"
+   height="64px"
+   viewBox="0 0 256.00 256.00"
+   stroke="#ffffff"
+   stroke-width="8.959999999999999"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="phase.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="8.9824658"
+     inkscape:cx="29.056609"
+     inkscape:cy="30.114225"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="346"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <g
+     id="SVGRepo_bgCarrier"
+     stroke-width="0" />
+  <g
+     id="SVGRepo_tracerCarrier"
+     stroke-linecap="round"
+     stroke-linejoin="round" />
+  <g
+     id="g1"
+     transform="matrix(1.4280322,0,0,1.4303161,-54.788115,-55.080454)"
+     style="stroke-width:6.26938;stroke:#ffffff">
+    <circle
+       style="fill:none;stroke:#ffffff;stroke-width:13.9942;stroke-linecap:round;stroke-dasharray:none"
+       id="path1"
+       cx="127.99998"
+       cy="127.99998"
+       r="77.138687" />
+    <rect
+       style="fill:none;stroke:#ffffff;stroke-width:13.9942;stroke-linecap:round;stroke-dasharray:none"
+       id="rect1"
+       width="213.30446"
+       height="6.6796803"
+       x="-106.65223"
+       y="177.67949"
+       transform="rotate(-45)" />
+  </g>
+</svg>

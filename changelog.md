@@ -1,4 +1,17 @@
 # Combat Tracker Extensions Change Log
+## Version 1.3(2024-02-26)
+- Added option "Unset phase name","The name(caption) to be shown for the Unset phase"
+- Added option "Enable phase assignment random","When checked, the Phase Assignment dropdown will have a entry for randomly selecting a unset combatant." 
+- Added combatant command "Set combatant to current"
+- Added option "Enable base menu commands", "Enable base dropdown menu commands." Function was there before, but not optional.
+- Added base menu command "Select"
+- Added option "Enable combatants groups","Enable grouping of combatants."
+- Added option "New groups shares initiative", "When checked, new groups will be created with Shared Initiative enabled as default. Only used if [Enable combatants groups] is enabled"
+- Added option "Hide players combatants initiative","If checked, player combatants will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only."
+- CHANGE: All options "Show [type] combatants initiative" is now "Hide [type] combatants initiative"
+- CHANGE: All options "Show [type] combatants" is now "Hide [type] combatants"
+- Moved module setttings to own form
+
 ## Version 1.2(2024-02-06)
 - Added option "Enable round set","Enables custom defined round set for the combat tracker. Each round in the round set has its own phases."
 - Reworked dropdowns, added dropdown items for selection based NPC disposition

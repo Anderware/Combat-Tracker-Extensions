@@ -1,0 +1,48 @@
+<form id="combat-tracker-extensions-group-editor-form" class="combat-tracker-extensions-group-editor-form">
+  <h2 class="module-header" style="padding-top:5px;border-top: 1px solid #b5b3a4;">{{localize "GroupEditor.Title"}}</h2>
+  <!-- Main data container -->
+  <div class="combat-tracker-extensions-group-editor-data-container">
+    <table>
+      <tr><td>{{localize "GroupEditor.Label.Name.Caption"}}</td> <td><input                type="text" id="groupname-{{groupid}}"        name="groupname"  value="{{groupname}}"/></td></tr>
+      <tr>
+        <td>{{localize "GroupEditor.Label.Color.Caption"}}</td>
+        <td>
+          <input type="text" id="groupcolor-{{groupid}}"       name="groupcolor" value="{{groupcolor}}" class="combat-tracker-extensions-group-editor-color-value"/>
+          <input id="color-picker-{{groupid}}" type="color" value="{{groupcolor}}" data-edit="groupcolor" data-tooltip="{{localize "ColorPicker.Title"}}">
+          <i class="fas fa-droplet combat-tracker-extensions-icon-btn combat-tracker-extensions-group-editor-color-button" data-tooltip="{{localize "HTMLColorPicker.Title"}}"></i>
+
+        </td></tr>
+      <tr><td>{{localize "GroupEditor.Label.SharesInitiative.Caption"}}</td><td><input type="checkbox" id="sharesinitiative-{{groupid}}" name="sharesinitiative"   {{checked sharesinitiative}}/></td></tr>
+    </table>
+    <h3>{{localize "GroupEditor.Label.Members.Caption"}}</h3>
+    <table>
+
+      <tbody id="combat-tracker-extensions-group-editor-data-tbody">
+        {{#each members}}
+        <tr class="combat-tracker-extensions-group-editor-member">
+          <td><img src="{{this.img}}" alt="{{this.name}}" class="combat-tracker-extensions-group-editor-token-image"/></td>
+          <td>{{this.name}}</td>
+          <td><i class="fas fa-trash combat-tracker-extensions-icon-btn combat-tracker-extensions-group-editor-remove-member" data-combatant-id="{{this.id}}" data-tooltip="{{localize "GroupEditor.Button.RemoveMember.Hint"}}" ></i></td>
+        </tr>
+        {{/each}}
+        </tbody>
+        </table>
+        </div>
+        <footer class="sheet-footer flexrow">
+    <button type="button" name="combat-tracker-extensions-group-editor-update">
+      <i class="fas fa-save"></i> {{localize "GroupEditor.Button.Update.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-group-editor-update-and-close">
+      <i class="fas fa-save"></i> {{localize "GroupEditor.Button.UpdateAndClose.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-group-editor-delete">
+      <i class="fas fa-trash"></i> {{localize "GroupEditor.Button.Delete.Caption"}}
+    </button>
+
+    <button type="button" name="combat-tracker-extensions-group-editor-close-editor">
+      <i class="fas fa-times"></i> {{localize "GroupEditor.Button.Close.Caption"}}
+    </button>
+  </footer>
+        </form>
