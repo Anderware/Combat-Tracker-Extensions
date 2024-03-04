@@ -9,7 +9,7 @@
 ![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.0/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)  
 ![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.1/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)  
 ![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.2/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)  
-![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.3/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)
+![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.3/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)  
 ![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/Anderware/Combat-Tracker-Extensions/v1.4/combat-tracker-extensions.zip?style=for-the-badge&color=%23ff6400)  
 
 ### Total
