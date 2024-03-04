@@ -237,6 +237,16 @@ span.combat-tracker-extensions-roundset-current-turn-marker{
   width:48px
 }
 
+.combat-tracker-extensions-group-editor-token-cell{
+  width:60px; 
+}
+.combat-tracker-extensions-group-editor-name-cell{
+  
+}
+.combat-tracker-extensions-group-editor-manipulators-cell{
+  width:32px;
+}
+
 span.combat-tracker-extensions-color-picker-color {
     display: inline-block;
     height: 20px;
@@ -253,8 +263,9 @@ span.combat-tracker-extensions-color-picker-color-selected{
 
 .combat-tracker-extensions-menu-icon{
   border:none;
-  height:22px;
-  width:22px;
+  height:1.25em;
+  width: 1.25em;
   border-radius: unset;
   vertical-align: text-bottom;
+  margin-right: 5px;
 }

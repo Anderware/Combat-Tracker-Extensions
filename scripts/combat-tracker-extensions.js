@@ -4,7 +4,7 @@ import { libWrapper } from './shim.js';
 import { SETTINGATTRIBUTE } from "./setting-constants.js"
 import { settingsMenus, settingsRegistration, getModuleSetting } from "./settings-registration.js";
 import { wrappedSortCombatants, wrappedOnHoverIn, wrappedOnHoverOut, wrappedOnToggleDefeatedStatus,
-        _getCombatantsSharingToken, wrappedDisplayScrollingStatus, wrappedRollAll, wrappedRollNPC } from "./fvttt_core_overrides.js";
+        _getCombatantsSharingToken, wrappedDisplayScrollingStatus, wrappedRollAll, wrappedRollNPC, wrappedManageTurnEvents } from "./fvttt_core_overrides.js";
 import { DropDownMenu } from "./dropdownmenu.js";
 import { GroupEditorForm } from "./group-editor-form.js";
 import { CombatTrackerExtensionsPhaseEditorForm } from "./phase-editor-form.js";
@@ -12,7 +12,8 @@ import { CombatTrackerExtensionsRoundSetEditorForm } from "./roundset-editor-for
 
 import { getInitiativeGroups, getInitiativeGroup, addInitiativeGroup,
         leaveInitiativeGroup, joinInitiativeGroup, createInitiativeGroup,
-        getInitiativeGroupCombatants, clearAllInitiativeGroups, deleteAllInitiativeGroups, getCombatInitiativeGroup } from "./initiative-groups.js"
+        getInitiativeGroupCombatants, clearAllInitiativeGroups, deleteAllInitiativeGroups,
+        getCombatInitiativeGroup, leadInitiativeGroup } from "./initiative-groups.js"
 import { customDialogConfirm } from "./custom-dialogs.js";
 import { ModuleSettingsForm } from "./module-settings-form.js";
 
@@ -38,12 +39,26 @@ async function _onInit() {
   console.log(`${moduleTitle} | Initializing ${moduleTitle} module`);
   await settingsMenus(moduleId);
   await settingsRegistration(moduleId);
+  // Foundry core patch for v11 for combat bug https://github.com/foundryvtt/foundryvtt/issues/9718
+  // should be fixed in v12
+  if (isNewerVersion(game.version, 11) && !isNewerVersion(game.version, 12)) {
+    console.log(`${moduleTitle} | Overriding _manageTurnEvents(Issue https://github.com/foundryvtt/foundryvtt/issues/9718)`);
+    libWrapper.register(moduleId, 'Combat.prototype._manageTurnEvents', wrappedManageTurnEvents);
+  } else if (isNewerVersion(game.version, 12)) {
+    console.warn(`${moduleTitle} | Developer note: Verify that this bug is fixed in v12 for _manageTurnEvents(Issue https://github.com/foundryvtt/foundryvtt/issues/9718)`);
+  }
+
+
   OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME.ID);
   console.log(`${moduleTitle} | Settings up overrides`);
   if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE.ID) || getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID) || getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_GROUPS.ID)) {
     // check for valid defined phases
     console.log(`${moduleTitle} | Overriding default combatant sorting`);
     libWrapper.register(moduleId, 'Combat.prototype._sortCombatants', wrappedSortCombatants);
+    // if pf2e. pf2e has so much modifications to foundry core so it is not worth putting in to much work to make it work
+    if(game.system.id=='pf2e'){
+      libWrapper.register(moduleId, 'EncounterPF2e.prototype._sortCombatants', wrappedSortCombatants);
+    }
   }
 
   if (getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_GROUPS.ID)) {
@@ -129,7 +144,7 @@ Hooks.on("updateCombatant", async(combatant, data, options, userid) => {
   const OPTION_COMBAT_TRACKER_ENABLE_PHASES = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASES.ID);
   const OPTION_COMBAT_TRACKER_SHARING_GROUPS_SHARE_PHASE = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_SHARING_GROUPS_SHARE_PHASE.ID);
   // only trigger updates for the group if update comes from the same user
-  if (userid == game.user.id  && game.user.isGM && OPTION_COMBAT_TRACKER_ENABLE_GROUPS) {
+  if (userid == game.user.id && game.user.isGM && OPTION_COMBAT_TRACKER_ENABLE_GROUPS) {
     const groupid = getInitiativeGroup(combatant);
     let hasJoinedGroup = data?.flags?.combattrackerextensions?.initiativegroup?.id ?? null;
     if (hasJoinedGroup != null) {
@@ -144,7 +159,7 @@ Hooks.on("updateCombatant", async(combatant, data, options, userid) => {
           await combatant.update({initiative: currentGroupInitiativeValue}, {joinedgroup: true});
           // check for phases
           if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && OPTION_COMBAT_TRACKER_SHARING_GROUPS_SHARE_PHASE) {
-            let hasChangedPhase=firstOtherGroupMember.flags?.combattrackerextensions?.phase ?? 999;
+            let hasChangedPhase = firstOtherGroupMember.flags?.combattrackerextensions?.phase ?? 999;
             const flagData = {combattrackerextensions: {phase: hasChangedPhase}};
             await combatant.update({flags: flagData}, {groupphase: false});
           }
@@ -277,6 +292,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
   const OPTION_COMBAT_TRACKER_ENABLE_GROUPS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_GROUPS.ID);
 
   if (OPTION_COMBAT_TRACKER_ENABLE_GROUPS || OPTION_COMBAT_TRACKER_ENABLE_BASIC_COMMANDS || OPTION_COMBAT_TRACKER_ENABLE_ROUNDSET || OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT || OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN || OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE || OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE || OPTION_COMBAT_TRACKER_ENABLE_PHASES || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS || OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS || OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS || OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS || OPTION_COMBAT_TRACKER_ENABLE_INITIATIVE_INPUT_FIELD) {
+    const COMBAT_ACTIVE = combatTracker.viewed != null;
     const combatTrackerId = html[0].id;
     const isPoppedOut = (combatTrackerId == 'combat-popout');
     let downVerticalAdjustment = 0;
@@ -351,7 +367,13 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
     for (const combatantElement of combatants) {
       const combatant = await game.combat.combatants.get(combatantElement.dataset.combatantId);
       //console.log(combatant);
-      const token = await combatant.token;
+      let token = await combatant.token;
+      let isOwner;
+      if (token == null) {
+        isOwner = false;
+      } else {
+        isOwner = token.isOwner;
+      }
 
       //console.log(token);
       const combatantPhase = combatant.flags?.combattrackerextensions?.phase ?? 999;
@@ -409,7 +431,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           }
         }
       }
-      if ((OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS && game.user.isGM) || (OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS && !game.user.isGM)) {
+      if ((OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_GMS && game.user.isGM && token) || (OPTION_COMBAT_TRACKER_SHOW_DISPOSITION_FOR_PLAYERS && !game.user.isGM && token)) {
         // --------------------------------------
         // For both gms and non-gms if applicable
         // --------------------------------------                
@@ -422,7 +444,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           combatantElement.classList.add('combat-tracker-extensions-disposition-party');
         } else {
           // check disposition
-          switch (token?.disposition ?? '') {
+          switch (token.disposition) {
             case CONST.TOKEN_DISPOSITIONS.FRIENDLY:
               combatantElement.classList.add('combat-tracker-extensions-disposition-friendly');
               break;
@@ -444,17 +466,23 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       if ((OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS && game.user.isGM) || (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_PLAYERS && !game.user.isGM)) {
         // get the image from the token actor portrait
         // console.log(combatant);
-        const actorImg = token.actor.img;
-        // get the image element   token-image
-        let initImg = combatantElement.getElementsByClassName('token-image')[0];
-        if (initImg.src != actorImg) {
-          // get the current classes
-          const currentClassName = initImg.className;
-          // replace the image src attribute
-          const newImg = document.createElement('IMG');
-          newImg.className = currentClassName;
-          newImg.src = actorImg;
-          initImg.replaceWith(newImg);
+        if (token) {
+          if (token.actor) {
+            const actorImg = token.actor.img;
+            if (actorImg != null) {
+              // get the image element   token-image
+              let initImg = combatantElement.getElementsByClassName('token-image')[0];
+              if (initImg.src != actorImg) {
+                // get the current classes
+                const currentClassName = initImg.className;
+                // replace the image src attribute
+                const newImg = document.createElement('IMG');
+                newImg.className = currentClassName;
+                newImg.src = actorImg;
+                initImg.replaceWith(newImg);
+              }
+            }
+          }
         }
       }
       if (game.user.isGM) {
@@ -503,7 +531,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             aMask.setAttribute('class', 'combat-tracker-extensions-combatant-control');
           }
           aMask.setAttribute('data-control', 'toggleNameMask');
-          aMask.setAttribute('data-tooltip', game.i18n.localize("COMBAT.ToggleNameMask"));
+          aMask.setAttribute('data-tooltip', game.i18n.localize("COMBATTRACKEREXTENSIONS.ToggleNameMask"));
           let iMask = document.createElement("I");
           iMask.setAttribute('class', 'fas fa-mask');
           aMask.appendChild(iMask);
@@ -530,11 +558,11 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       }
 
       let tokenEffects = combatantElement.getElementsByClassName('token-effects')[0];
-      if (OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || (!game.user.isGM && OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS && !token.isOwner)) {
+      if (OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS || (!game.user.isGM && OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS && !isOwner)) {
         // delete all default img for token effects               
         tokenEffects.innerHTML = '';
       }
-      if (OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS && (game.user.isGM || token.isOwner && OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS || !OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS)) {
+      if (OPTION_COMBAT_TRACKER_SHOW_TOKEN_EFFECT_TOOLTIPS && (game.user.isGM || isOwner && OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS || !OPTION_COMBAT_TRACKER_HIDE_TOKEN_EFFECTS_FOR_PLAYERS)) {
         // add new ones for all appiledeffects
         const combatantControlsDiv = combatantElement.getElementsByClassName('combatant-controls')[0];
         //console.log(token.name,combatantControlsDiv.childElementCount)
@@ -552,27 +580,28 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         if (isNewerVersion(game.version, 11)) {
           nameProperty = "name"; // foundry 11 uses "name"
         }
-        // check if token is invisible and add that as an effect
-        if (token.hidden) {
-          //effects.add({name:game.i18n.localize("EFFECT.StatusInvisible"),icon:"icons/svg/invisible.svg"});
-          addEffect(effects, game.i18n.localize("EFFECT.StatusInvisible"), "icons/svg/invisible.svg");
-        }
+
 
         if (combatant.token) {
+          // check if token is invisible and add that as an effect
+          if (combatant.token.hidden) {
+            //effects.add({name:game.i18n.localize("EFFECT.StatusInvisible"),icon:"icons/svg/invisible.svg"});
+            addEffect(effects, game.i18n.localize("EFFECT.StatusInvisible"), "icons/svg/invisible.svg");
+          }
           for (const effect of combatant.token.effects) {
             //effects.add({name:effect.label,icon:effect.icon});
             addEffect(effects, effect[nameProperty], effect.icon);
           }
+          if (combatant.token.overlayEffect) {
+            //effects.add({name:"Overlay",icon:combatant.token.overlayEffect});
+            addEffect(effects, "Overlay", combatant.token.overlayEffect);
+          }
         }
-        if (combatant.token.overlayEffect) {
-          //effects.add({name:"Overlay",icon:combatant.token.overlayEffect});
-          addEffect(effects, "Overlay", combatant.token.overlayEffect);
-        }
+
         if (combatant.actor) {
           for (const effect of combatant.actor.temporaryEffects) {
             // ignore "EFFECT.StatusDead"
             if (effect.name != game.i18n.localize("EFFECT.StatusDead")) {
-
               addEffect(effects, effect[nameProperty], effect.icon);
             }
           }
@@ -621,7 +650,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         const nameDiv = combatantElement.getElementsByClassName('token-name')[0];
         if (initDiv) {
           const combatantLi = initDiv.parentNode;
-          if (OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN) {
+          if (OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_PAN_TO_TOKEN && token) {
             combatantLi.addEventListener("click", async (event) => {
               event.preventDefault();
               const li = event.currentTarget;
@@ -646,7 +675,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             const OPTION_COMBAT_TRACKER_HIDE_COMBATANTS_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_COMBATANTS_NPCS.ID);
             const OPTION_COMBAT_TRACKER_HIDE_COMBATANTS_NON_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_COMBATANTS_NON_NPCS.ID);
             const OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_NON_NPCS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_NON_NPCS.ID);
-            if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_DISPOSITION) {
+            if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT_BY_DISPOSITION && token) {
               const OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_FRIENDLY = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_FRIENDLY.ID);
               const OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_NEUTRAL = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_NEUTRAL.ID);
               const OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_HOSTILE = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_HIDE_INITIATIVES_HOSTILE.ID);
@@ -703,13 +732,13 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           }
           // always check for ownership
-          if (token.isOwner) {
+          if (isOwner) {
             hideInitiativeValue = false;
             hideCombatantEntry = false;
             hideCombatantName = false;
           }
           if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING && hideCombatantName) {
-            nameDiv.firstElementChild.innerText = game.i18n.localize("COMBAT.UnknownCombatant");
+            nameDiv.firstElementChild.innerText = game.i18n.localize("COMBATTRACKEREXTENSIONS.UnknownCombatant");
           }
           if (OPTION_COMBAT_TRACKER_OBSCURE_COMBATANT) {
             if (hideInitiativeValue) {
@@ -729,7 +758,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       if (OPTION_COMBAT_TRACKER_ENABLE_BASIC_COMMANDS && game.user.isGM) {
         let menuItemsBasicCommands =
                 {
-                  name: "COMBAT.ChangeToActive",
+                  name: "COMBATTRACKEREXTENSIONS.ChangeToActive",
                   icon: '<i class="fas fa-arrows-to-line"></i>',
                   callback: async a => {
                     const combatantId = a.data("combatant-id");
@@ -746,7 +775,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       // -------------------------
       const OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_CHANGE_PHASE = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_CHANGE_PHASE.ID);
       // change phase if any both for gm and players
-      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null && (game.user.isGM || OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_CHANGE_PHASE && token.isOwner)) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null && (game.user.isGM || OPTION_COMBAT_TRACKER_ENABLE_PLAYERS_CHANGE_PHASE && isOwner)) {
         let combatantPhase = combatant.flags?.combattrackerextensions?.phase ?? 999;
         if (combatantPhase == 999 || combatantPhase == -1) {
           combatantPhase = definedPhases.phases.length - 1;
@@ -757,7 +786,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         for (let i = 0; i < definedPhases.phases.length; i++) {
           const cid = combatant.id;
           let phasemenuItem = {
-            name: game.i18n.format("COMBAT.ChangePhase", {phasename: definedPhases.phases[i].name}),
+            name: game.i18n.format("COMBATTRACKEREXTENSIONS.ChangePhase", {phasename: definedPhases.phases[i].name}),
             icon: `<i class="fas ${definedPhases.phases[i].icon}"></i>`,
             condition: combatantPhase != i,
             callback: async a => {
@@ -772,7 +801,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
 
       }
       // TOKEN INVISIBILITY
-      if (OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE && game.user.isGM) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_VISIBILITY_TOGGLE && game.user.isGM && token) {
         let isTokenInVisible = token.hidden;
         let invisibleIcon;
         let initImg = combatantElement.getElementsByClassName('token-image')[0];
@@ -785,7 +814,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           menuItems.push({separator: true});
         }
         menuItem = {
-          name: "COMBAT.ToggleTokenVisibility",
+          name: "COMBATTRACKEREXTENSIONS.ToggleTokenVisibility",
           icon: `<i class="${invisibleIcon}"></i>`,
 
           callback: async a => {
@@ -801,14 +830,14 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       // -----------------
       // CHANGE DISPOSTION
       // -----------------
-      if (OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE && game.user.isGM) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_DISPOSITION_CHANGE && game.user.isGM && token) {
         const tokenDisposition = token.disposition;
         if (menuItems.length > 0) {
           menuItems.push({separator: true});
         }
         let menuItemsDisposition = [
           {
-            name: "COMBAT.ChangeDispositionToFriendly",
+            name: "COMBATTRACKEREXTENSIONS.ChangeDispositionToFriendly",
             icon: '<i class="fas fa-face-smile"></i>',
             condition: tokenDisposition != CONST.TOKEN_DISPOSITIONS.FRIENDLY,
             callback: async a => {
@@ -818,7 +847,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           },
           {
-            name: "COMBAT.ChangeDispositionToNeutral",
+            name: "COMBATTRACKEREXTENSIONS.ChangeDispositionToNeutral",
             icon: '<i class="fas fa-face-meh"></i>',
             condition: tokenDisposition != CONST.TOKEN_DISPOSITIONS.NEUTRAL,
             callback: async a => {
@@ -828,7 +857,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           },
           {
-            name: "COMBAT.ChangeDispositionToHostile",
+            name: "COMBATTRACKEREXTENSIONS.ChangeDispositionToHostile",
             icon: '<i class="fas fa-face-angry"></i>',
             condition: tokenDisposition != CONST.TOKEN_DISPOSITIONS.HOSTILE,
             callback: async a => {
@@ -838,7 +867,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           },
           {
-            name: "COMBAT.ChangeDispositionToSecret",
+            name: "COMBATTRACKEREXTENSIONS.ChangeDispositionToSecret",
             icon: '<i class="fas fa-face-hand-over-mouth"></i>',
             condition: isNewerVersion(game.version, 11) && tokenDisposition != CONST.TOKEN_DISPOSITIONS.SECRET,
             callback: async a => {
@@ -852,12 +881,12 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         menuItems = menuItems.concat(menuItemsDisposition);
 
       }
-      if (OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT && game.user.isGM) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_DUPLICATE_COMBATANT && game.user.isGM && token) {
         if (menuItems.length > 0) {
           menuItems.push({separator: true});
         }
         let menuItemAddDuplicate = {
-          name: "COMBAT.DuplicateCombatant",
+          name: "COMBATTRACKEREXTENSIONS.DuplicateCombatant",
           icon: '<i class="far fa-copy"></i>',
           callback: a => {
             const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
@@ -867,7 +896,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         menuItems.push(menuItemAddDuplicate);
 
         let menuItemRemoveAllDuplicates = {
-          name: "COMBAT.RemoveAllDuplicates",
+          name: "COMBATTRACKEREXTENSIONS.RemoveAllDuplicates",
           icon: '<i class="fas fa-trash"></i>',
           callback: a => {
             const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
@@ -888,9 +917,10 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         if (groupId == null) {
           // option to create group
           let menuCreateGroupItem = {
-            name: "COMBAT.InitiativeGroupCreateFromToken",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromToken",
             icon: '<i class="fas fa-users-medical"></i>',
-            tooltip: "COMBAT.InitiativeGroupCreateFromTokenHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromTokenHint",
+            condition: token,
             callback: async a => {
               const combat = combatTracker.viewed;
               const combatant = combat.combatants.get(a.data("combatant-id"));
@@ -898,19 +928,23 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
               const tokenid = token.id;
               const groupName = combatant.name;
               const initiativeGroup = createInitiativeGroup(combat, groupName, tokenid);
+              // add this combatant
+              await joinInitiativeGroup(combatant, initiativeGroup.id);
               // add group to all combatants with this token
-              let combatants = combat.combatants.filter(y => (y.token.id == tokenid));
+              let combatants = combat.combatants.filter(y => (y.token != null && y.token.id == tokenid));
               for (let i = 0; i < combatants.length; i++) {
-                joinInitiativeGroup(combatants[i], initiativeGroup.id);
+                if (combatants[i].id != combatant.id)
+                  await joinInitiativeGroup(combatants[i], initiativeGroup.id);
               }
             }
           };
           menuItems.push(menuCreateGroupItem);
           // create group with all actors of this combatant          
           let menuCreateGroupFromActorItem = {
-            name: "COMBAT.InitiativeGroupCreateFromActor",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromActor",
             icon: '<i class="fas fa-users-medical"></i>',
-            tooltip: "COMBAT.InitiativeGroupCreateFromActorHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromActorHint",
+            condition: token,
             callback: async a => {
               const combat = combatTracker.viewed;
               const combatant = combat.combatants.get(a.data("combatant-id"));
@@ -919,10 +953,13 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
               const actorId = actor.id;
               const groupName = actor.name;
               const initiativeGroup = createInitiativeGroup(combat, groupName, actorId);
+              // add this combatant
+              await joinInitiativeGroup(combatant, initiativeGroup.id);
               // add group to all combatant based on this actor
-              let combatants = combat.combatants.filter(y => (y.actor.id == actorId));
+              let combatants = combat.combatants.filter(y => (y.actor != null && y.actor.id == actorId));
               for (let i = 0; i < combatants.length; i++) {
-                joinInitiativeGroup(combatants[i], initiativeGroup.id);
+                if (combatants[i].id != combatant.id)
+                  await joinInitiativeGroup(combatants[i], initiativeGroup.id);
               }
 
             }
@@ -930,9 +967,10 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           menuItems.push(menuCreateGroupFromActorItem);
           //
           let menuCreateGroupFromActorFolderItem = {
-            name: "COMBAT.InitiativeGroupCreateFromActorFolder",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromActorFolder",
             icon: '<i class="fas fa-users-medical"></i>',
-            tooltip: "COMBAT.InitiativeGroupCreateFromActorFolderHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromActorFolderHint",
+            condition: token,
             callback: async a => {
               const combat = combatTracker.viewed;
               const combatant = combat.combatants.get(a.data("combatant-id"));
@@ -944,10 +982,13 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
               const folderColor = folder?.color ?? null;
 
               const initiativeGroup = createInitiativeGroup(combat, groupName, folderId, folderColor);
+              // add this combatant
+              await joinInitiativeGroup(combatant, initiativeGroup.id);
               // add group to all combatant based on this actor
-              let combatants = combat.combatants.filter(y => ((folderId != null && y.actor.folder != null && y.actor.folder.id == folderId)) || (folderId == null && y.actor.folder == null));
+              let combatants = combat.combatants.filter(y => ((folderId != null && y.actor != null && y.actor.folder != null && y.actor.folder.id == folderId)) || (folderId == null && y.actor != null && y.actor.folder == null));
               for (let i = 0; i < combatants.length; i++) {
-                joinInitiativeGroup(combatants[i], initiativeGroup.id);
+                if (combatants[i].id != combatant.id)
+                  await joinInitiativeGroup(combatants[i], initiativeGroup.id);
               }
 
             }
@@ -963,13 +1004,13 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             const groupColor = initiativeGroups[i].color;
             let tooltip = createInitiativeGroupTooltip(combat, groupId);
             let menuJoinGroupItem = {
-              name: game.i18n.format("COMBAT.InitiativeGroupJoin", {initiativegroupname: groupName}),
+              name: game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupJoin", {initiativegroupname: groupName}),
               icon: `<i class="fas fa-users fa-fw" style="color:${groupColor};"></i>`,
               tooltip: tooltip,
               callback: async a => {
                 const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
                 // add group to this combatant
-                joinInitiativeGroup(combatant, groupId);
+                await joinInitiativeGroup(combatant, groupId);
               }
             };
             menuItems.push(menuJoinGroupItem);
@@ -995,10 +1036,22 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           };
           menuItems.push(group);
+          
+          // option to become group leader
+          let menuLeadGroupItem = {
+            name: game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupLead", {}),
+            icon: `<i class="fas fa-users-crown fa-fw" style="color:${groupColor};"></i>`,
+            tooltip: tooltip,
+            callback: async a => {
+              const combatant = combatTracker.viewed.combatants.get(a.data("combatant-id"));
+              leadInitiativeGroup(combatant,groupId);
+            }
+          };
+          menuItems.push(menuLeadGroupItem);
 
           // option to leave group
           let menuLeaveGroupItem = {
-            name: game.i18n.format("COMBAT.InitiativeGroupLeave", {initiativegroupname: groupName}),
+            name: game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupLeave", {initiativegroupname: groupName}),
             icon: `<i class="fas fa-users-slash fa-fw" style="color:${groupColor};"></i>`,
             tooltip: tooltip,
             callback: async a => {
@@ -1066,8 +1119,8 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
     }
     // --------
     // CTE
-    // add super tools for gms. but only if there is an encounter(otherwise any command will get error)
-    if (game.user.isGM && combatTracker.viewed != null && (OPTION_COMBAT_TRACKER_ENABLE_GROUPS || OPTION_COMBAT_TRACKER_ENABLE_BASIC_COMMANDS || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null))) {
+    // add super tools for gms. 
+    if (game.user.isGM && (OPTION_COMBAT_TRACKER_ENABLE_GROUPS || OPTION_COMBAT_TRACKER_ENABLE_BASIC_COMMANDS || OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING || (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null))) {
       const encounterControls = html.find('.encounter-controls')[0];
       const firstChild = encounterControls.firstElementChild;
       let aCTE = document.createElement("a");
@@ -1081,46 +1134,64 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       encounterControls.insertBefore(aCTE, firstChild);
       let menuItems = [];
       if (OPTION_COMBAT_TRACKER_ENABLE_BASIC_COMMANDS) {
+        let subMenuAdd = createSelectorMenuItems(combatTracker, MENUCOMMANDS.ADD, false, false);
         let subMenuReveal = createSelectorMenuItems(combatTracker, MENUCOMMANDS.REVEAL);
         let subMenuHide = createSelectorMenuItems(combatTracker, MENUCOMMANDS.HIDE);
+        let subMenuRemove = createSelectorMenuItems(combatTracker, MENUCOMMANDS.REMOVE);
         let subMenuSelect = createSelectorMenuItems(combatTracker, MENUCOMMANDS.SELECT);
         //let subMenuClearInitaitive = createSelectorMenuItems(combatTracker, MENUCOMMANDS.CLEARINITIATIVE);
         let menuItemsBasic = [
           {
-            name: "COMBAT.MenuReveal",
+            name: "COMBATTRACKEREXTENSIONS.MenuAdd",
+            icon: '<img class="combat-tracker-extensions-menu-icon" src="icons/svg/combat.svg">',
+            tooltip: "COMBATTRACKEREXTENSIONS.MenuAddTooltip",
+            submenuitems: subMenuAdd
+          },
+          {separator: true},
+          {
+            name: "COMBATTRACKEREXTENSIONS.MenuReveal",
             icon: '<i class="fas fa-eye fa-fw"></i>',
+            condition: COMBAT_ACTIVE,
             submenuitems: subMenuReveal
           },
           {
-            name: "COMBAT.MenuHide",
+            name: "COMBATTRACKEREXTENSIONS.MenuHide",
             icon: '<i class="fas fa-eye-slash fa-fw"></i>',
+            condition: COMBAT_ACTIVE,
             submenuitems: subMenuHide
           },
           {
-            name: "COMBAT.MenuSelect",
+            name: "COMBATTRACKEREXTENSIONS.MenuRemove",
+            icon: '<i class="fas fa-trash fa-fw"></i>',
+            condition: COMBAT_ACTIVE,
+            submenuitems: subMenuRemove
+          },
+          {
+            name: "COMBATTRACKEREXTENSIONS.MenuSelect",
             icon: '<i class="fas fa-square-dashed fa-fw"></i>',
+            condition: COMBAT_ACTIVE,
             submenuitems: subMenuSelect
           }
           //,
           //{
-          //  name: "COMBAT.MenuClearInitiative",
+          //  name: "COMBATTRACKEREXTENSIONS.MenuClearInitiative",
           //  icon: '<i class="fas fa-undo fa-fw"></i>',
           //  submenuitems: subMenuClearInitaitive
           //}
         ];
         menuItems = menuItems.concat(menuItemsBasic);
       }
-      if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_NAME_MASKING && COMBAT_ACTIVE) {
         let subMenuUnMask = createSelectorMenuItems(combatTracker, MENUCOMMANDS.UNMASK);
         let subMenuMask = createSelectorMenuItems(combatTracker, MENUCOMMANDS.MASK);
         let menuMaskItems = [
           {
-            name: "COMBAT.MenuUnMask",
+            name: "COMBATTRACKEREXTENSIONS.MenuUnMask",
             icon: '<i class="fas fa-glasses fa-fw"></i>',
             submenuitems: subMenuUnMask
           },
           {
-            name: "COMBAT.MenuMask",
+            name: "COMBATTRACKEREXTENSIONS.MenuMask",
             icon: '<i class="fas fa-mask fa-fw"></i>',
             submenuitems: subMenuMask
           }
@@ -1128,23 +1199,23 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         menuItems = menuItems.concat(menuMaskItems);
       }
 
-      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_PHASES && definedPhases != null && COMBAT_ACTIVE) {
         aCTE.setAttribute('data-unset-phase-index', definedPhases.phases.length - 1);
         let subMenuUnset = createSelectorMenuItems(combatTracker, MENUCOMMANDS.ASSIGNUNSETPHASE);
         let phaseMenuItems = [
           {
-            name: game.i18n.format("COMBAT.MenuUnset", {unsetphase: OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME}),
+            name: game.i18n.format("COMBATTRACKEREXTENSIONS.MenuUnset", {unsetphase: OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME}),
             icon: '<i class="fas fa-question fa-fw"></i>',
             submenuitems: subMenuUnset
           }
         ];
         menuItems = menuItems.concat(phaseMenuItems);
       }
-      if (OPTION_COMBAT_TRACKER_ENABLE_GROUPS) {
+      if (OPTION_COMBAT_TRACKER_ENABLE_GROUPS && COMBAT_ACTIVE) {
         const combat = combatTracker.viewed;
         let submenuGroupsCreateItems = [
           {
-            name: "COMBAT.InitiativeGroupCreateNew",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateNew",
             icon: '<i class="fas fa-users-medical fa-fw"></i>',
             callback: async a => {
               let f = new GroupEditorForm();
@@ -1153,103 +1224,110 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           },
           {separator: true},
           {
-            name: "COMBAT.InitiativeGroupCreateFromPlayers",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromPlayers",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.PARTY.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromPlayersHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromPlayersHint",
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.PARTY.GROUPID;
               const groupColor = DISPOSITIONS.PARTY.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsPlayers");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsPlayers");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (!combatant.isNPC) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (!combatant.isNPC && combatant.token) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
           },
           {
-            name: "COMBAT.InitiativeGroupCreateFromNPCs",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromNPCs",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.NPC.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromNPCsHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromNPCsHint",
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.NPC.GROUPID;
               const groupColor = DISPOSITIONS.NPC.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsNPCs");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsNPCs");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (combatant.isNPC && combatant.token) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
           },
           {
-            name: "COMBAT.InitiativeGroupCreateFromFriendlyNPCs",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromFriendlyNPCs",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.FRIENDLY.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromFriendlyNPCsHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromFriendlyNPCsHint",
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.FRIENDLY.GROUPID;
               const groupColor = DISPOSITIONS.FRIENDLY.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsFriendly");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsFriendly");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
           },
           {
-            name: "COMBAT.InitiativeGroupCreateFromNeutralNPCs",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromNeutralNPCs",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.NEUTRAL.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromNeutralNPCsHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromNeutralNPCsHint",
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.NEUTRAL.GROUPID;
               const groupColor = DISPOSITIONS.NEUTRAL.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsNeutral");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsNeutral");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
           },
           {
-            name: "COMBAT.InitiativeGroupCreateFromHostileNPCs",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromHostileNPCs",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.HOSTILE.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromHostileNPCsHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromHostileNPCsHint",
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.HOSTILE.GROUPID;
               const groupColor = DISPOSITIONS.HOSTILE.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsHostile");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsHostile");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
           },
           {
-            name: "COMBAT.InitiativeGroupCreateFromSecretNPCs",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromSecretNPCs",
             icon: `<i class="fas fa-users-medical fa-fw" style="color:${DISPOSITIONS.SECRET.MONO}"></i>`,
-            tooltip: "COMBAT.InitiativeGroupCreateFromSecretNPCsHint",
+            tooltip: "COMBATTRACKEREXTENSIONS.InitiativeGroupCreateFromSecretNPCsHint",
+            condition: isNewerVersion(game.version, 11),
             callback: async a => {
               const combat = combatTracker.viewed;
               const groupId = DISPOSITIONS.SECRET.GROUPID;
               const groupColor = DISPOSITIONS.SECRET.MONO;
-              const groupName = game.i18n.localize("COMBAT.InitiativeGroupsSecret");
+              const groupName = game.i18n.localize("COMBATTRACKEREXTENSIONS.InitiativeGroupsSecret");
               const initiativeGroup = createInitiativeGroup(combat, groupName, groupId, groupColor);
-              for (const combatant of combatTracker.viewed.combatants) {
-                if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
-                  joinInitiativeGroup(combatant, initiativeGroup.id);
+              const combatants = combat.combatants.contents.sort((a, b) => a.name.localeCompare(b.name));
+              for (const combatant of combatants) {
+                if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                  await joinInitiativeGroup(combatant, initiativeGroup.id);
                 }
               }
             }
@@ -1258,12 +1336,12 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
 
         let submenuGroupsItems = [
           {
-            name: "COMBAT.InitiativeGroupClearAllGroups",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupClearAllGroups",
             icon: '<i class="fas fa-users-slash fa-fw"></i>',
             callback: async a => {
-              let prompttitle = game.i18n.format("COMBAT.InitiativeGroupConfirmClearAllGroupsPromptTitle", {});
+              let prompttitle = game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmClearAllGroupsPromptTitle", {});
               let promptbody = '<h4>' + game.i18n.localize("AreYouSure") + '</h4>';
-              promptbody += '<p>' + game.i18n.format("COMBAT.InitiativeGroupConfirmClearAllGroupsPromptBody", {}) + '</p>';
+              promptbody += '<p>' + game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmClearAllGroupsPromptBody", {}) + '</p>';
               let answer = await customDialogConfirm(prompttitle, promptbody, game.i18n.localize("Yes"), game.i18n.localize("No"));
               if (!answer) {
                 return 0;
@@ -1272,12 +1350,12 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
             }
           },
           {
-            name: "COMBAT.InitiativeGroupDeleteAllGroups",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupDeleteAllGroups",
             icon: '<i class="fas fa-trash fa-fw"></i>',
             callback: async a => {
-              let prompttitle = game.i18n.format("COMBAT.InitiativeGroupConfirmDeleteAllGroupsPromptTitle", {});
+              let prompttitle = game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmDeleteAllGroupsPromptTitle", {});
               let promptbody = '<h4>' + game.i18n.localize("AreYouSure") + '</h4>';
-              promptbody += '<p>' + game.i18n.format("COMBAT.InitiativeGroupConfirmDeleteAllGroupsPromptBody", {}) + '</p>';
+              promptbody += '<p>' + game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmDeleteAllGroupsPromptBody", {}) + '</p>';
               let answer = await customDialogConfirm(prompttitle, promptbody, game.i18n.localize("Yes"), game.i18n.localize("No"));
               if (!answer) {
                 return 0;
@@ -1293,13 +1371,14 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
           submenuGroupsItems = submenuGroupsItems.concat(groupsMenuItems);
         }
         let submenuGroupsItem = [
+          {separator: true},
           {
-            name: "COMBAT.InitiativeGroupsCreate",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupsCreate",
             icon: '<i class="fas fa-users-medical fa-fw"></i>',
             submenuitems: submenuGroupsCreateItems
           },
           {
-            name: "COMBAT.InitiativeGroupsEdit",
+            name: "COMBATTRACKEREXTENSIONS.InitiativeGroupsEdit",
             icon: '<i class="fas fa-users fa-fw"></i>',
             submenuitems: submenuGroupsItems
           }
@@ -1311,7 +1390,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
       let settingSubMenuItems = [{
           name: "COMBATTRACKEREXTENSIONS.MenuSettings",
           icon: '<i class="fas fa-cogs fa-fw"></i>',
-          
+
           callback: html => {
             let f = new ModuleSettingsForm();
             f.render(true, {focus: true});
@@ -1322,7 +1401,7 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         //<i class="fas fa-arrow-down-big-small fa-fw"></i>
         // <img class="combat-tracker-extensions-menu-icon" src="modules/${moduleId}/styles/img/phase.svg">
         let phaseEditorMenuItem = {
-          name: "COMBATTRACKEREXTENSIONS.MenuPhaseEditor", 
+          name: "COMBATTRACKEREXTENSIONS.MenuPhaseEditor",
           icon: `<i class="fas fa-arrow-down-big-small fa-fw"></i>`,
           callback: html => {
             let f = new CombatTrackerExtensionsPhaseEditorForm();
@@ -1349,6 +1428,8 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
         tooltip: "COMBATTRACKEREXTENSIONS.MenuSettingsHint",
         submenuitems: settingSubMenuItems
       };
+      
+      menuItems.push({separator: true});
       menuItems.push(settingMenuItem);
       // should offset downvertical by 9
       dropDownMenuOptions.downVerticalAdjustment = 9;
@@ -1359,13 +1440,47 @@ Hooks.on('renderCombatTracker', async (combatTracker, html, combatData) => {
   }
 });
 
+
+//Hooks.on('drawToken', async (token) => {
+//  console.log('drawToken', token);
+//  token.document.texture.src = CONST.DEFAULT_TOKEN;
+//
+//});
+
+
+
+//Hooks.on('canvasReady', async (canvas) => {
+//  console.log('canvasReady');
+//  const OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS.ID);
+//  if (OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS) {
+//    for (const token of canvas.tokens.placeables) {
+//      if (OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS && !token.isOwner) {
+//        const visible = token.visible;
+//        token.document.texture.src = CONST.DEFAULT_TOKEN;         
+//        await token.draw();
+//        token.visible = visible;
+//      }
+//    }
+//  }
+//});
+
+
+
+
 Hooks.on('refreshToken', async (token, options) => {
-  //console.log('refreshToken',token, options);
+  //console.log('refreshToken', token, options);
   if (!game.user.isGM) {
     const OPTION_CANVAS_TOKEN_HIDE_TOKEN_EFFECTS_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_CANVAS_TOKEN_HIDE_TOKEN_EFFECTS_FOR_PLAYERS.ID);
+    const OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS.ID);
     if (OPTION_CANVAS_TOKEN_HIDE_TOKEN_EFFECTS_FOR_PLAYERS && !token.isOwner) {
       token.effects.visible = false;
     }
+    if (OPTION_CANVAS_TOKEN_HIDE_TOKEN_BORDER_FOR_PLAYERS && !token.isOwner) {
+      token.border.visible = false;
+      //token.children[4].text = game.i18n.localize("COMBATTRACKEREXTENSIONS.UnknownCombatant");          
+    }
+    // if you ever add an option to obscure the token name 
+    // token.children[4].text = "kenneth"            
   }
 });
 
@@ -1376,7 +1491,7 @@ function createAssignPhase(aCallGroup, combatTracker, phaseIndex) {
   aCallGroup.setAttribute('class', 'combat-tracker-extensions-menu-phase-assign');
   let iCallGroup = document.createElement('I');
   iCallGroup.setAttribute('class', 'fas fa-arrow-down-to-square');
-  iCallGroup.setAttribute('data-tooltip', game.i18n.localize("COMBAT.PhaseAssign"));
+  iCallGroup.setAttribute('data-tooltip', game.i18n.localize("COMBATTRACKEREXTENSIONS.PhaseAssign"));
   aCallGroup.appendChild(iCallGroup);
 
   let menuItems = [];
@@ -1386,8 +1501,8 @@ function createAssignPhase(aCallGroup, combatTracker, phaseIndex) {
   const OPTION_COMBAT_TRACKER_ENABLE_PHASE_ASSIGN_RANDOM_UNSET = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_PHASE_ASSIGN_RANDOM_UNSET.ID);
   if (OPTION_COMBAT_TRACKER_ENABLE_PHASE_ASSIGN_RANDOM_UNSET) {
     let randomAssign = {
-      name: game.i18n.format("COMBAT.SelectorRandomUnsetCombatant", {unsetphase: OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME}),
-      icon: '<i class="fas fa-dice-d20 fa-fw"></i>',      
+      name: game.i18n.format("COMBATTRACKEREXTENSIONS.SelectorRandomUnsetCombatant", {unsetphase: OPTION_COMBAT_TRACKER_PHASE_UNSET_NAME}),
+      icon: '<i class="fas fa-dice-d20 fa-fw"></i>',
       callback: async a => {
         const unsetPhaseIndex = a.data("unset-phase-index");
         const phaseIndex = a.data("phase-index");
@@ -1427,116 +1542,175 @@ function createAssignPhase(aCallGroup, combatTracker, phaseIndex) {
 }
 
 
-function unselectAllTokensOnCanvas() {
-  canvas.tokens.selectObjects({}, {releaseOthers: true});
-}
-function selectTokenOnCanvas(combatant) {
-  const tokenid = combatant.token.id;
-  const canvasToken = canvas.tokens.ownedTokens.find(y => y.id == tokenid);
-  if (canvasToken != null) {
-    canvasToken.control({releaseOthers: false});
-  }
-}
 
-function createSelectorMenuItems(combatTracker, command) {
+
+function createSelectorMenuItems(combatTracker, command, includeGroups = true, isCombatantCommand = true) {
   let menuItems = [
     {
-      name: "COMBAT.SelectorAll",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAll",
       icon: '<i class="fas fa-head-side fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAll")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              combatantCommand(a, combatant, command);
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              await tokenCommand(a, token, command);
+            }
+          }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
 
     {separator: true},
     {
-      name: "COMBAT.SelectorAllPlayers",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllPlayers",
       icon: '<i class="fas fa-head-side-brain fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (!combatant.isNPC) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllPlayers")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (!combatant.isNPC) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (token.hasPlayerOwner) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
     {separator: true},
     {
-      name: "COMBAT.SelectorAllNPCs",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllNPCs",
       icon: '<i class="fas fa-face-meh-blank fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (combatant.isNPC) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllNPCs")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (combatant.token && combatant.isNPC) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (!token.hasPlayerOwner) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
     {
-      name: "COMBAT.SelectorAllNPCsFriendly",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllNPCsFriendly",
       icon: '<i class="fas fa-face-smile fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllNPCsFriendly")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (!token.hasPlayerOwner && token.disposition == CONST.TOKEN_DISPOSITIONS.FRIENDLY) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
     {
-      name: "COMBAT.SelectorAllNPCsNeutral",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllNPCsNeutral",
       icon: '<i class="fas fa-face-meh fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllNPCsNeutral")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (!token.hasPlayerOwner && token.disposition == CONST.TOKEN_DISPOSITIONS.NEUTRAL) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
     {
-      name: "COMBAT.SelectorAllNPCsHostile",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllNPCsHostile",
       icon: '<i class="fas fa-face-angry fa-fw"></i>',
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllNPCsHostile")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (!token.hasPlayerOwner && token.disposition == CONST.TOKEN_DISPOSITIONS.HOSTILE) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     },
     {
-      name: "COMBAT.SelectorAllNPCsSecret",
+      name: "COMBATTRACKEREXTENSIONS.SelectorAllNPCsSecret",
       icon: '<i class="fas fa-face-hand-over-mouth fa-fw"></i>',
       condition: isNewerVersion(game.version, 11),
       callback: async a => {
-        selectorPreCommand(command);
-        for (const combatant of combatTracker.viewed.combatants) {
-          if (combatant.isNPC && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
-            selectorCommand(a, combatant, command);
+        if (await selectorPreCommand(command, "COMBATTRACKEREXTENSIONS.SelectorAllNPCsSecret")) {
+          if (isCombatantCommand) {
+            for (const combatant of combatTracker.viewed.combatants) {
+              if (combatant.isNPC && combatant.token && combatant.token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                combatantCommand(a, combatant, command);
+              }
+            }
+          } else {
+            const sceneTokens = canvas.scene.tokens;
+            for (const token of sceneTokens) {
+              if (!token.hasPlayerOwner && token.disposition == CONST.TOKEN_DISPOSITIONS.SECRET) {
+                await tokenCommand(a, token, command);
+              }
+            }
           }
+          selectorPostCommand(command);
         }
-        selectorPostCommand(command);
       }
     }
   ];
   // groups
   const OPTION_COMBAT_TRACKER_ENABLE_GROUPS = getModuleSetting(moduleId, SETTINGATTRIBUTE.OPTION_COMBAT_TRACKER_ENABLE_GROUPS.ID);
-  if (OPTION_COMBAT_TRACKER_ENABLE_GROUPS) {
+  if (OPTION_COMBAT_TRACKER_ENABLE_GROUPS && includeGroups) {
     let groupsMenuItems = createSelectorGroupsMenuItems(combatTracker, command);
     if (groupsMenuItems.length > 0) {
       menuItems.push({separator: true});
@@ -1568,12 +1742,14 @@ function createSelectorGroupsMenuItems(combatTracker, command) {
             f.render(true, {focus: true});
             break;
           default:
-            selectorPreCommand(command);
-            const initiativeGroupCombatants = getInitiativeGroupCombatants(combat, groupId);
-            for (let i = 0; i < initiativeGroupCombatants.length; i++) {
-              selectorCommand(a, initiativeGroupCombatants[i], command);
+            if (await selectorPreCommand(command, groupName)) {
+              const initiativeGroupCombatants = getInitiativeGroupCombatants(combat, groupId);
+              for (let i = 0; i < initiativeGroupCombatants.length; i++) {
+                combatantCommand(a, initiativeGroupCombatants[i], command);
+              }
+              selectorPostCommand(command);
             }
-            selectorPostCommand(command);
+
             break;
         }
       }
@@ -1589,7 +1765,7 @@ function createInitiativeGroupTooltip(combat, groupId) {
   let tooltip = ``;
   for (let i = 0; i < initiativeGroupCombatants.length; i++) {
     let img = initiativeGroupCombatants[i].img;
-    if (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS) {
+    if (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS && initiativeGroupCombatants[i].token) {
       img = initiativeGroupCombatants[i].token.actor.img;
     }
     tooltip += `<div class="combat-tracker-extensions-initiativegroup-tooltip"><img class="combat-tracker-extensions-initiativegroup-icon" src="${img}"><span class="combat-tracker-extensions-initiativegroup-name">${initiativeGroupCombatants[i].name}</span></div>`;
@@ -1606,15 +1782,42 @@ const MENUCOMMANDS = {
   CLEARINITIATIVE: 6,
   EDITGROUP: 7,
   ASSIGNPHASE: 8,
-  ASSIGNUNSETPHASE: 9
+  ASSIGNUNSETPHASE: 9,
+  REMOVE: 10,
+  ADD: 11
 };
 
-async function selectorPreCommand(command) {
+function unselectAllTokensOnCanvas() {
+  canvas.tokens.selectObjects({}, {releaseOthers: true});
+}
+function selectTokenOnCanvas(combatant) {
+  if (combatant.token) {
+    const tokenid = combatant.token.id;
+    const canvasToken = canvas.tokens.ownedTokens.find(y => y.id == tokenid);
+    if (canvasToken != null) {
+      canvasToken.control({releaseOthers: false});
+    }
+  }
+}
+
+async function selectorPreCommand(command, scope = '') {
+  let result = true;
   switch (command) {
     case MENUCOMMANDS.SELECT:
       unselectAllTokensOnCanvas();
       break;
+    case MENUCOMMANDS.REMOVE:
+      // ask user to confirm
+      let prompttitle = game.i18n.format("COMBATTRACKEREXTENSIONS.ConfirmRemoveCombatantsPromptTitle", {});
+      let promptbody = '<h4>' + game.i18n.localize("AreYouSure") + '</h4>';
+      promptbody += '<p>' + game.i18n.format("COMBATTRACKEREXTENSIONS.ConfirmRemoveCombatantsPromptBody", {selection: game.i18n.localize(scope)}) + '</p>';
+      let answer = await customDialogConfirm(prompttitle, promptbody, game.i18n.localize("Yes"), game.i18n.localize("No"));
+      if (!answer) {
+        result = false;
+      }
+      break;
   }
+  return result;
 }
 
 async function selectorPostCommand(command) {
@@ -1625,8 +1828,35 @@ async function selectorPostCommand(command) {
       break;
   }
 }
-
-async function selectorCommand(a, combatant, command) {
+async function tokenCommand(a, token, command) {
+  switch (command) {
+    case MENUCOMMANDS.ADD:
+      //const combatTracker = game.combats.apps[0];
+      let combat = game.combats.viewed;
+      // check for active combat
+      if (!combat) {
+        // no combat started, create one
+        const cls = await getDocumentClass("Combat");
+        combat = await cls.create({scene: canvas.scene.id, active: true});
+      }
+      const c = combat.combatants.find(y => y.tokenId == token.id);
+      // check if token already in this combat
+      if (c == null) {
+        // add this token          
+        const newCombatants = [{
+            tokenId: token.id,
+            actorId: token.actor.id,
+            sceneId: canvas.scene.id,
+            initiative: null // Optional, you can set initiative here or you can leave it null to be rolled later
+          }];
+        await combat.createEmbeddedDocuments("Combatant", newCombatants);
+      }
+      break;
+    default:
+      break;
+  }
+}
+async function combatantCommand(a, combatant, command) {
   let flagData;
   let phaseIndex;
   switch (command) {
@@ -1635,6 +1865,9 @@ async function selectorCommand(a, combatant, command) {
       break;
     case MENUCOMMANDS.HIDE:
       await combatant.update({hidden: true});
+      break;
+    case MENUCOMMANDS.REMOVE:
+      await combatant.delete();
       break;
     case MENUCOMMANDS.SELECT:
       selectTokenOnCanvas(combatant);

@@ -8,32 +8,49 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 
 ## Feature Summary
 
-- All features optional and configurable
-- Combatant name masking - hides token name in Combat Tracker from non-GMs
-- Obscures/hide combatant information/entry for non-GMs in Combat Tracker based on
-  - Module current settings
-  - NPC/Player token
-  - Token disposition
-  - Token current visibility for current player
-  - Token ownership
-- Automatically set added combatants to hidden/name masked
-- Change token disposition/visibility from Combat Tracker
-- Hide Active Effects for tokens on the canvas and/or the Combat Tracker
-- Reverse initiative order
+- All features optional, configurable and works together
 - Combatant Groups
   - With or without Shared Initiative(Group Initiative) 
+  - Quick shortcuts for creating groups
+  - Selectable group leader
   - Shows combatant group/shared initiative by color indication
-
 - Custom defined combat phases
   - Allow players to change phase for owned tokens
-
 - Custom defined round set
+- Reverse initiative order
 - Multiple combatants for the same token
+- Obscure(hide) combatant information/entry for non-GMs in/on: 
+  - Combat Tracker
+
+    - Combatant and/or combatant initiative value based on
+      - Module current settings
+      - NPC/Player token
+      - Token disposition
+      - Token current visibility for current player
+      - Token ownership
+
+    - Combatant name
+      - Combatant name masking - hides token name in Combat Tracker from non-GMs
+      - Option to automatically set added combatants to name masked
+
+    - Combatant visibility(not to be confused with token visibility)
+      - Option to automatically set added combatants to hidden
+
+    - Combatants Active Effects for tokens on the Combat Tracker
+
+  - Canvas(scene)
+    - Token Active Effects
+    - Token Borders
+
+- Show information in Combat Tracker(for GMs and/or Players)
+  - Combatant disposition by color indication
+  - Show token actor portrait instead of token portrait
+
+- Change token disposition/visibility from Combat Tracker
 - Quick input field to modify current initiative value
-- Show combatant disposition by color indication
-- Show token actor portrait instead of token portrait
 - Pan to token in Combat Tracker for players
 - Select, pan and zoom to type/group combatants for GMs
+- Add tokens from scene based on token type and/or disposition
 
 ### Queries, bugs, suggestions, comments?
 
@@ -41,9 +58,15 @@ A system-agnostic FoundryVTT module for modifying and extending the standard Com
 
 [Discussion on GitHub](https://github.com/Anderware/Combat-Tracker-Extensions/discussions)
 
+## Combat Tracker Extensions Basic User Interface
+
+Depending on current module setting, various interface elements are added/displayed.
+
+![](./resources/combat-tracker-extensions_ui.png)
+
 ## Demo screens
 
-### Demo screen 1
+### Demo screen 1 - Obscuring player´s Combat Tracker
 
 In the screenshot below, a scenario with all module options enabled, to the left is the GMs screen, to the right is the Alban´s player screen.
 Alban´s player can not see Orc Shaman(invisible) or Orc Archer 2(blocked line of sight), he can not see any other tokens/combatants active effects or the name of masked combatants. The token Eva has disposition of SECRET and therefore her initiative is hidden from Alban.
@@ -51,13 +74,13 @@ Alban has also been granted a second action(duplicated combatant).
 
 ![Demo](./resources/demo_screen_1.jpg)
 
-### Demo screen 2
+### Demo screen 2 - Obscuring player´s Combat Tracker
 
 In this scenario, Alban´s player can only see other players that has a FRIENDLY disposition
 
 ![](./resources/demo_screen_2.jpg)
 
-### Demo screen 3
+### Demo screen 3 - Obscuring player´s Combat Tracker
 
 Same scenario as demo 2 but with phases disabled
 
@@ -65,14 +88,24 @@ Same scenario as demo 2 but with phases disabled
 
 ## Dropdown menus
 
-#### Encounter control dropdown
+All menus available content is controlled by the module current settings
+
+### Encounter Control Dropdown Menu
 
 If any options are enabled, a command button is added to the Encounter Controls
 
-From this dropdown it is possible to
+![](./resources/demo_screen_dropdown_encounter_control.jpg)
+
+#### Token Commands
+
+- Add - for adding tokens on the canvas matching selection type to the current encounter. 
+  If the token is already in the encounter as a combatant, its current state(visibility, initiative,phase etc) is kept as is(it will not be added again).
+
+#### Combatant Commands
 
 - Reveal - will make combatants visible in players Combat Tracker(if not hidden by other settings)
 - Hide - will make combatants hidden in players Combat Tracker
+- Remove - will remove combatants from encounter
 - Select - will select combatants tokens on the canvas and pan and zoom to fit them on screen
 - Unmask - will make combatants name show in players Combat Tracker
 - Mask - will hide combatants name in players Combat Tracker
@@ -89,23 +122,102 @@ For each command, a sub dropdown menu will open with the following selections po
 - All Secret NPCs - the command will only affect NPCs combatants with a Secret disposition in the current encounter
 - If Groups is used, any groups will also added.
 
-![](./resources/demo_screen_dropdown_encounter_control.jpg)
+#### Group Commands
 
-##### Module Settings
+##### Create group
+
+![](./resources/group_create_encounter_control.jpg)
+
+###### Create new group
+
+Create a new group with no members
+
+###### Create group from type
+
+Creates a group based on all combatants of that type. If group already exist, it will be updated
+
+- Players
+- NPCs
+- Friendly NPCs
+- Neutral NPCs
+- Hostile NPCs
+- Secret NPCs
+
+##### Edit groups
+
+![](./resources/group_edit_encounter_control.jpg)
+
+###### Clear all groups
+
+This will remove all members from all existing groups without deleting any groups.
+
+###### Delete all groups
+
+This will remove all members from all existing groups and delete all groups.
+
+###### [group name]
+
+Opens the group editor form for selected group
+
+See sections on Groups for more information
+
+#### Setting Commands
 
 The Encounter Control Dropdown also have shortcuts to 
 
 - Module settings
-- If Round Set is enabled, the Round set Editor
-- If Phases is enabled, the Phases Editor
+- If Round Set is enabled, the Round Set Editor can be opened from here
+- If Phases is enabled, the Phases Editor can be opened from here
 
 ![](./resources/settings_encounter_control.jpg)
 
-#### Combatant
+### Combatant Dropdown Menu
 
 ![](./resources/demo_screen_dropdown_combatant_control.jpg)
 
-#### Phase Assignment
+#### Group Commands
+
+##### Ungrouped combatant
+
+![](./resources/group_create_combatant_control.jpg)
+
+###### Create group from token
+
+Creates group from selected token and joins all combatants with this token to the created group.  The combatant that triggered the group creation will be added first to the group and designated group leader.
+If the group already exist, it will be updated.
+
+###### Create group from actor
+
+Creates group from selected actor and joins all combatants with this actor to the created group. The combatant that triggered the group creation will be added first to the group and designated group leader.
+If the group already exist, it will be updated.
+
+###### Create group from actor folder
+
+Creates group from selected actor folder and joins all combatants with actors in the same folder to the created group. The combatant that triggered the group creation will be added first to the group and designated group leader. 
+If the folder has a color, the group will use that color.
+If the group already exist, it will be updated.
+
+###### Join [group name]
+
+Joins the selected combatant to the group
+
+##### Grouped combatant
+
+![](./resources/combatant_control_grouped.jpg)
+
+###### [group name]
+
+Opens the group editor form for selected group
+
+###### Set as group leader
+
+Make selected combatant group leader
+
+###### Leave [group name]
+
+This will set the combatant to ungrouped.
+
+### Phase Assignment
 
 Each phase has a command control that can assign(move) a selection of combatants to it.
 
@@ -113,9 +225,11 @@ Each phase has a command control that can assign(move) a selection of combatants
 
 ##### Random from Unset
 
-This will take a random combatant from the Unset phase. Combatants in a group that shares the initiative and option for Phase sharing enabled, will be handled as a single combatant and if selected by the random dice, all members of that group will be assigned to the same phase.
+This will take a random combatant from the Unset phase. 
 
-#### Effect summary tooltip
+Combatants in a group that shares the initiative and option for Phase sharing enabled, will be handled as a single combatant and if selected by the random dice, all members of that group will be assigned to the same phase.
+
+### Effect summary tooltip
 
 If a combatant has more active effects than can be displayed in the combat tracker, all effects will be replaced by a summary icon. This icon has a tooltip that displays all effects.
 
@@ -141,7 +255,8 @@ Use the Round Set Editor found in the module´s Configure Game Settings or, when
 
 A Phase is a part of a Foundry round. This feature divides the Foundry round into phases which each has its own initiative order. Combatants is assigned to a phase. You can use any naming for phases, it could be like in the example below  or just "Players", "Enemies", "Allies" etc.
 
-A "Unset" phase is always added to the defined phases and will be the default phase a combatant is assigned to when added to an encounter. The name displayed for the Unset phase can be changed in settings.
+A "Unset" phase is always added to the defined phases and will be the default phase a combatant is assigned to when added to an encounter. 
+The name displayed for the Unset phase can be changed in settings.
 
 Use the Phase Editor found in the module´s Configure Game Settings or, when Phases is enabled, the Encounter Control Dropdown, to define custom phases.
 
@@ -149,13 +264,17 @@ Use the Phase Editor found in the module´s Configure Game Settings or, when Pha
 
 ### Combatant Groups
 
-Groups comes in two major flavors, groups that shares initiative and groups that does not share initiatives
+Groups comes in two major flavors, groups that shares initiative and groups that does not share initiatives.
+
+The first combatant added to a group will be designated the default group leader, this can be changed later with the combatant dropdown menu command **Set as group leader**.
+
+Groups are only visible to GMs.
 
 #### Non-sharing groups
 
 Indicated by a dashed left border.
 
-Combatants in a non-sharing group are treated as any other combatant. The grouping is merely a logical extension to be used for helping the GM to keep gangs/bands/strike teams etc  together.
+Combatants in a non-sharing group are treated as any other combatant. The grouping is merely a logical extension to be used for helping the GM to keep gangs/bands/strike teams etc. together and use overall commands like Mask/Unmask/Reveal/Select etc.
 
 ![](./resources/group_non_sharing.jpg)
 
@@ -165,81 +284,15 @@ Indicated by a solid left border
 
 Combatants in a sharing group is handles as a single combatant, if initiative (or phase if option is checked) is changed for one combatant in the group, the others are updated to match.
 
+The group leader´s initiative will be used for **Roll All**/**Roll NPC** commands and also the sorting in Combat Tracker and Group Editor
+
 ![](./resources/group_sharing.jpg)
-
-#### Creating group
-
-##### Encounter Control Dropdown
-
-![](./resources/group_create_encounter_control.jpg)
-
-###### Create new group
-
-Create a new group with no members
-
-###### Create group from type
-
-Creates a group based on all combatants of that type. If group already exist, it will be updated
-
-- Players
-- NPCs
-- Friendly NPCs
-- Neutral NPCs
-- Hostile NPCs
-- Secret NPCs
-
-##### Combatant Dropdown
-
-![](./resources/group_create_combatant_control.jpg)
-
-###### Create group from token
-
-Creates group from selected token and joins all combatants with this token to the created group. If group already exist, it will be updated.
-
-###### Create group from actor
-
-Creates group from selected actor and joins all combatants with this actor to the created group. If group already exist, it will be updated.
-
-###### Create group from actor folder
-
-Creates group from selected actor folder and joins all combatants with actors in the same folder to the created group. If group already exist, it will be updated.
-
-###### Join [group name]
-
-Joins the selected combatant to the group
-
-##### Edit groups from Encounter Control
-
-![](./resources/group_edit_encounter_control.jpg)
-
-###### Clear all groups
-
-This will remove all members from all existing groups. Groups will remain.
-
-###### Delete all groups
-
-This will remove all members from all existing groups and delete all groups.
-
-###### Edit [group name]
-
-Opens the group editor form for selected group
-
-##### Edit group from combatant
-
-![](./resources/group_leave_combatant_control.jpg)
-
-###### Edit [group name]
-
-Opens the group editor form for selected group
-
-###### Leave [group name]
-
-This will set the combatant to ungrouped.
 
 ## Module Settings
 
 ![](./resources/settings_module.jpg)
 
+## Module Settings
 ### General Options
 General options
 #### Reverse initiative
@@ -318,6 +371,8 @@ When checked, adding a NPC token to the Combat Tracker will have its name masked
 When checked, combatants active effects in Combat Tracker will only be showed for owned tokens.
 #### Hide token effects for non-GMs
 When checked, token active effects on the Canvas will only be showed for owned tokens.
+#### Hide token border for non-GMs
+When checked, token border on the Canvas will only be showed for owned tokens.
 #### Hide FRIENDLY combatants initiative
 If checked, combatants with FRIENDLY token disposition will not show their initiative value in the Combat Tracker. Only used if [Enable obscure combatant] is checked. Applies for non-GMs only.
 #### Hide NEUTRAL combatants initiative

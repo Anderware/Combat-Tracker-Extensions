@@ -73,10 +73,10 @@ export class GroupEditorForm extends FormApplication {
     let members = [];
     for (let i = 0; i < combatants.length; i++) {
       let img = combatants[i].img;
-      if (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS) {
+      if (OPTION_COMBAT_TRACKER_USE_ACTOR_PORTRAITS_FOR_GMS && combatants[i].token) {
         img = combatants[i].token.actor.img;
       }
-      members.push({id: combatants[i].id, name: combatants[i].name, img: img});
+      members.push({id: combatants[i].id, name: combatants[i].name, img: img,membernumber:combatants[i].flags.combattrackerextensions?.initiativegroup?.membernumber ?? -1});
     }
     let data = {
       groupid: this.groupid,
@@ -135,9 +135,9 @@ export class GroupEditorForm extends FormApplication {
   async _onDelete(event) {
     event.preventDefault();
     event.stopPropagation();
-    let prompttitle = game.i18n.format("COMBAT.InitiativeGroupConfirmDeleteGroupPromptTitle", {});
+    let prompttitle = game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmDeleteGroupPromptTitle", {});
     let promptbody = '<h4>' + game.i18n.localize("AreYouSure") + '</h4>';
-    promptbody += '<p>' + game.i18n.format("COMBAT.InitiativeGroupConfirmDeleteGroupPromptBody", {}) + '</p>';
+    promptbody += '<p>' + game.i18n.format("COMBATTRACKEREXTENSIONS.InitiativeGroupConfirmDeleteGroupPromptBody", {}) + '</p>';
     let answer = await customDialogConfirm(prompttitle, promptbody, game.i18n.localize("Yes"), game.i18n.localize("No"));
     if (!answer) {
       return 0;

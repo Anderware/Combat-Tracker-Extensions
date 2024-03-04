@@ -2,9 +2,19 @@ const moduleId = 'combat-tracker-extensions';
 const moduleTitle = 'Combat Tracker Extensions';
 import { getModuleSetting } from "./settings-registration.js";
 import { SETTINGATTRIBUTE } from "./setting-constants.js"
+       
 
+function sortGroupCombatants(a, b) {
+  return a.flags?.combattrackerextensions?.initiativegroup?.membernumber - b.flags?.combattrackerextensions?.initiativegroup?.membernumber || a.name.localeCompare(b.name);
+}
+
+// returns array with combatants
 export function getInitiativeGroupCombatants(combat, groupid) {
+  // get all members
   let combatants = combat.combatants.filter(y => (y.flags?.combattrackerextensions?.initiativegroup?.id == groupid));
+  // sort them by adding sequence
+  //combatants.sort((a, b) => a.flags?.combattrackerextensions?.initiativegroup?.membernumber - b.flags?.combattrackerextensions?.initiativegroup?.membernumber);  
+  combatants.sort(sortGroupCombatants);
   return combatants;
 }
 
@@ -106,8 +116,20 @@ export function getInitiativeGroup(combatant) {
 }
 
 export async function joinInitiativeGroup(combatant, groupId) {
-  const flags = {combattrackerextensions: {initiativegroup: {id: groupId}}};
+  const initiativeGroupCombatants = getInitiativeGroupCombatants(combatant.combat, groupId);
+  const memberNumber = initiativeGroupCombatants.length;
+  const flags = {combattrackerextensions: {initiativegroup: {id: groupId, membernumber: memberNumber}}};
   await combatant.update({flags: flags});
+}
+
+export async function leadInitiativeGroup(combatant, groupId) {
+  const initiativeGroupCombatants = getInitiativeGroupCombatants(combatant.combat, groupId);
+  for (var i = 0; i < initiativeGroupCombatants.length; i++) {    
+    const flags = {combattrackerextensions: {initiativegroup: {id: groupId, membernumber: i + 1}}};
+    initiativeGroupCombatants[i].update({flags: flags})
+  }
+  const flags = {combattrackerextensions: {initiativegroup: {id: groupId, membernumber: 0}}};
+  await combatant.update({flags: flags})
 }
 
 export async function leaveInitiativeGroup(combatant) {

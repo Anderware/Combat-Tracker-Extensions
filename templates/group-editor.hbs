@@ -20,9 +20,11 @@
       <tbody id="combat-tracker-extensions-group-editor-data-tbody">
         {{#each members}}
         <tr class="combat-tracker-extensions-group-editor-member">
-          <td><img src="{{this.img}}" alt="{{this.name}}" class="combat-tracker-extensions-group-editor-token-image"/></td>
-          <td>{{this.name}}</td>
-          <td><i class="fas fa-trash combat-tracker-extensions-icon-btn combat-tracker-extensions-group-editor-remove-member" data-combatant-id="{{this.id}}" data-tooltip="{{localize "GroupEditor.Button.RemoveMember.Hint"}}" ></i></td>
+          <td class="combat-tracker-extensions-group-editor-token-cell"><img src="{{this.img}}" alt="{{this.name}}" class="combat-tracker-extensions-group-editor-token-image"/></td>
+          <td class="combat-tracker-extensions-group-editor-name-cell">{{this.name}}</td>
+          
+          
+          <td class="combat-tracker-extensions-group-editor-manipulators-cell"><i class="fas fa-trash combat-tracker-extensions-icon-btn combat-tracker-extensions-group-editor-remove-member" data-combatant-id="{{this.id}}" data-tooltip="{{localize "GroupEditor.Button.RemoveMember.Hint"}}" ></i></td>
         </tr>
         {{/each}}
         </tbody>

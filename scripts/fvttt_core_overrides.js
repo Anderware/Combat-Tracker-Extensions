@@ -18,28 +18,34 @@ export function wrappedSortCombatants(wrapped, a, b) {
 
   const initiativeA = Number.isNumeric(a.initiative) ? a.initiative : unsetInitiativeValue;
   const initiativeB = Number.isNumeric(b.initiative) ? b.initiative : unsetInitiativeValue;
-  const nameA = a.token?.name ?? '';
-  const nameB = b.token?.name ?? '';
+  const isNPCA = a.isNPC ?  1 : 0;
+  const isNPCB = b.isNPC ?  1 : 0;
+  const nameA = a?.name ?? '';
+  const nameB = b?.name ?? '';
   let groupIdA='';
   let groupIdB='';
+  let memberNumberA=0;
+  let memberNumberB=0;
   if(OPTION_COMBAT_TRACKER_ENABLE_GROUPS){
     groupIdA = a.flags.combattrackerextensions?.initiativegroup?.id ?? '';
     groupIdB = b.flags.combattrackerextensions?.initiativegroup?.id ?? '';
+    memberNumberA = a.flags.combattrackerextensions?.initiativegroup?.membernumber ?? 0;
+    memberNumberB = b.flags.combattrackerextensions?.initiativegroup?.membernumber ?? 0;
   }
 
   if (OPTION_COMBAT_TRACKER_ENABLE_PHASES) {
     const phaseA = Number.isNumeric(a.flags.combattrackerextensions?.phase) ? a.flags.combattrackerextensions?.phase : -Infinity;
     const phaseB = Number.isNumeric(b.flags.combattrackerextensions?.phase) ? b.flags.combattrackerextensions?.phase : -Infinity;
     if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {      
-      return phaseA - phaseB || initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
+      return phaseA - phaseB || initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) || memberNumberA - memberNumberB || isNPCA - isNPCB || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     } else {
-      return phaseA - phaseB || initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
+      return phaseA - phaseB || initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) || memberNumberA - memberNumberB || isNPCA - isNPCB || nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     }
   } else {
     if (OPTION_COMBAT_TRACKER_REVERSE_INITIATIVE) {
-      return initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
+      return initiativeA - initiativeB || groupIdA.localeCompare(groupIdB) || memberNumberA - memberNumberB || isNPCA - isNPCB ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     } else {
-      return initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
+      return initiativeB - initiativeA || groupIdA.localeCompare(groupIdB) || memberNumberA - memberNumberB || isNPCA - isNPCB ||  nameA.localeCompare(nameB) || a.tokenId - b.tokenId;
     }
   }
 }
@@ -86,10 +92,16 @@ export function wrappedOnHoverOut(wrapped, event) {
   }
 }
 
-export function _getCombatantsSharingToken(combatant) {
-  const combatantTokenIds = combatant.actor.getActiveTokens(false, true).map(t => t.id);
-  return combatant.parent.combatants
+export function _getCombatantsSharingToken(combatant) {  
+  if(combatant.actor){
+    const combatantTokenIds = combatant.actor.getActiveTokens(false, true).map(t => t.id);
+    return combatant.parent.combatants
           .filter(cb => combatantTokenIds.includes(cb.tokenId));
+  } else {
+    const result = [];
+    result.push(combatant);
+    return result;
+  }
 }
 
 
@@ -194,4 +206,43 @@ export function wrappedDisplayScrollingStatus(wrapped,enabled) {
       return true;
     }
     return false;
+  }
+  
+  
+  
+  // ----------------------------------------------------------
+  // the only reason for this override is a bug in v11
+  // https://github.com/foundryvtt/foundryvtt/issues/9718
+  // ----------------------------------------------------------
+  export async function wrappedManageTurnEvents(adjustedTurn) {
+    if ( !game.users.activeGM?.isSelf ) return;
+    // --------------------------------------------------------------
+    // EDITED
+    // Original line:
+    // const prior = this.combatants.get(this.previous.combatantId);
+    // Fixed line:
+    const prior = this.combatants.get(this.previous?.combatantId);
+    // END OF EDIT
+    // --------------------------------------------------------------
+    
+    // Adjust the turn order before proceeding. Used for embedded document workflows
+    if ( Number.isNumeric(adjustedTurn) ) await this.update({turn: adjustedTurn}, {turnEvents: false});
+    if ( !this.started ) return;
+
+    // Identify what progressed
+    const advanceRound = this.current.round > (this.previous.round ?? -1);
+    const advanceTurn = this.current.turn > (this.previous.turn ?? -1);
+    if ( !(advanceTurn || advanceRound) ) return;
+
+    // Conclude prior turn
+    if ( prior ) await this._onEndTurn(prior);
+
+    // Conclude prior round
+    if ( advanceRound && (this.previous.round !== null) ) await this._onEndRound();
+
+    // Begin new round
+    if ( advanceRound ) await this._onStartRound();
+
+    // Begin a new turn
+    await this._onStartTurn(this.combatant);
   }

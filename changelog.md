@@ -1,4 +1,13 @@
 # Combat Tracker Extensions Change Log
+## Version 1.4(2024-03-04)
+- Added option "Hide token border for non-GMs", "When checked, token border on the Canvas will only be showed for owned tokens."
+- Added support for token-less combatants(for better support of other modules)
+- Added base menu command "Remove", for removing selection of combatants from combat
+- Added base menu command "Add", for adding tokens on the canvas matching selection type to the current encounter
+- Changed combatant sorting, now uses combatant name instead of token name
+- Changed group mechanism, now the order of joining group will be used to sort combatants in Combat tracker for groups with shared initiative. Also, when rolling group initiative the initiative roll of currently first combatant in the group will be used.
+- Added combatant menu command "Set as group leader"
+
 ## Version 1.3(2024-02-26)
 - Added option "Unset phase name","The name(caption) to be shown for the Unset phase"
 - Added option "Enable phase assignment random","When checked, the Phase Assignment dropdown will have a entry for randomly selecting a unset combatant." 
@@ -35,5 +44,6 @@
 - CHANGE: Minor visual changes for combatant list
 - CHANGE: Option "Show combatant effect tooltips" now also add function for if not all effects can be showed, a summary icon with a full list as tooltip replaces all effect icons.
 - CHANGE: An invisble(hidden) token will have it showed as an effect
+
 ## Version 1.0(2024-01-20)
 - First release
