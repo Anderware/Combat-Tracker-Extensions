@@ -5,6 +5,7 @@
 # Combat Tracker Extensions
 
 A system-agnostic FoundryVTT module for modifying and extending the standard Combat Tracker
+Adds features to the standard Combat Tracker like name hiding, hide/obscure initiative/combatant based on type/disposition/visibility/ownership, reverse initiative order, groups, group initiative, custom combat phases, multiple combatants for the same token, display token dispositions and many more.
 
 ## Feature Summary
 
